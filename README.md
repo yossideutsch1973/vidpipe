@@ -1,6 +1,6 @@
 # VidPipe - Advanced Functional Pipeline Language for Video Processing
 
-VidPipe is a cutting-edge Python implementation of a **composable functional pipeline language** designed for real-time video processing. It provides an intuitive, declarative syntax for building complex video processing pipelines with advanced features like modularity, timing control, parallel execution, and a sophisticated Qt GUI.
+VidPipe is a Python implementation of a **composable functional pipeline language** designed for real-time video processing. It provides an intuitive, declarative syntax for building complex video processing pipelines with advanced features like modularity, timing control, parallel execution, and a sophisticated Qt GUI.
 
 ## 🌟 Key Features
 
