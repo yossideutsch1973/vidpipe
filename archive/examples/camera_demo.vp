@@ -1,0 +1,14 @@
+# Camera Demo - Live webcam feed in window
+# This demonstrates real-time camera capture and window display
+
+# Basic camera feed
+webcam -> window
+
+# Camera with edge detection  
+# webcam -> grayscale -> edges -> window
+
+# Camera with blur effect
+# webcam -> blur -> window
+
+# Multiple effects (uncomment to try)
+# webcam -> grayscale &> blur &> edges -> window

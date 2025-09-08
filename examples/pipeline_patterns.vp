@@ -1,0 +1,26 @@
+# Pipeline Pattern Examples
+# Demonstrating different pipeline operators and architectures
+
+# 1. Simple linear pipeline
+# Basic sequential processing
+webcam -> grayscale -> blur -> display
+
+# 2. Parallel processing with choice operator |
+# Apply different filters and choose between results
+webcam -> grayscale -> (edges | blur | threshold) -> display
+
+# 3. Fan-out with multiple outputs
+# Send processed video to multiple destinations
+webcam -> edges -> (display | record with (filename: "output.avi"))
+
+# 4. Complex parallel processing
+# Multiple independent processing chains
+webcam -> (grayscale -> edges | blur with (kernel_size: 7) | threshold with (threshold: 127)) -> display
+
+# 5. Parameterized parallel processing
+# Different parameter settings for parallel branches
+webcam -> grayscale -> (blur with (kernel_size: 3) | blur with (kernel_size: 9)) -> display
+
+# 6. Multi-stage with merge concept
+# Process different aspects and combine conceptually
+webcam -> (brightness with (brightness: 30) | contrast with (contrast: 20)) -> display

@@ -1,0 +1,34 @@
+# Debugging and Testing Examples
+# Techniques for testing and debugging video processing pipelines
+
+# 1. Basic functionality test
+# Test that webcam capture and display work
+webcam -> display
+
+# 2. Test pattern validation
+# Use synthetic patterns to test processing accuracy
+test-pattern with (pattern: "checkerboard") -> edges -> display
+
+# 3. Parameter testing
+# Test different parameter values systematically
+webcam -> blur with (kernel_size: 5) -> display
+
+# 4. Performance testing
+# Test frame rate with minimal processing
+webcam -> display
+
+# 5. Color space testing
+# Verify color processing works correctly
+webcam -> grayscale -> display
+
+# 6. Filter chain testing
+# Test multiple filters in sequence
+webcam -> grayscale -> blur -> threshold -> display
+
+# 7. Edge case testing
+# Test with extreme parameter values
+webcam -> brightness with (brightness: 100) -> contrast with (contrast: 100) -> display
+
+# 8. Memory/performance stress test
+# Test with high-resolution processing
+webcam -> resize with (width: 1920, height: 1080) -> blur with (kernel_size: 9) -> display

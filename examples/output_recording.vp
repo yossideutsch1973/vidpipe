@@ -1,0 +1,26 @@
+# Output and Recording Examples
+# Different ways to display and save processed video
+
+# 1. Basic display with custom window name
+# Display video in a named window
+webcam -> display with (window_name: "Live Feed")
+
+# 2. Parallel processing and display
+# Process video in multiple ways and display simultaneously
+webcam -> grayscale -> (edges | blur with (kernel_size: 5)) -> display
+
+# 3. Record processed video to file
+# Save edge-detected video to disk
+webcam -> edges -> record with (filename: "edges_output.avi", fps: 30.0)
+
+# 4. Display and record simultaneously
+# Show live feed while recording processed version
+webcam -> blur -> (display with (window_name: "Blurred") | record with (filename: "blurred_video.avi"))
+
+# 5. Multi-stage processing with recording
+# Complex pipeline with intermediate recording
+webcam -> brightness with (brightness: 20) -> contrast with (contrast: 30) -> (display | record with (filename: "processed.avi"))
+
+# 6. Save individual frames
+# Save processed frames as image files (with timestamp)
+webcam -> edges -> save with (filename: "frame_{timestamp}.png")

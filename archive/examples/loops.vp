@@ -1,0 +1,17 @@
+# Loop Examples for VidPipe
+# Use {} to create continuous loops
+
+# Basic continuous camera feed
+{webcam -> window}
+
+# Continuous edge detection loop (uncomment to use)
+# {webcam -> grayscale -> edges -> window}
+
+# Continuous blur effect loop (uncomment to use)  
+# {webcam -> blur -> window}
+
+# Complex continuous processing (uncomment to use)
+# {webcam -> grayscale -> corners -> window}
+
+# You can also loop simulated feeds (uncomment to use)
+# {camera -> grayscale -> window}

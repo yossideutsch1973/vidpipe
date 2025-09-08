@@ -1,0 +1,81 @@
+# Comprehensive VidPipe Multi-Pipeline Demo
+# This file demonstrates all features: sequential timing, parallel execution, and various processing techniques
+
+# ============================================================================
+# SEQUENTIAL PIPELINES WITH TIMING
+# ============================================================================
+
+# 1. Basic webcam feed for 5 seconds
+--pipeline 5s
+# Simple webcam display to verify camera is working
+webcam -> display with (window_name: "Basic Webcam Feed")
+
+# 2. Grayscale processing for 8 seconds
+--pipeline 8s
+# Convert to grayscale and display
+webcam -> grayscale -> display with (window_name: "Grayscale Processing")
+
+# 3. Edge detection for 6 seconds
+--pipeline 6s
+# Detect edges using Canny algorithm
+webcam -> grayscale -> edges -> display with (window_name: "Edge Detection")
+
+# 4. Blur effects for 7 seconds
+--pipeline 7s
+# Apply different blur strengths
+webcam -> blur with (kernel_size: 7) -> display with (window_name: "Gaussian Blur")
+
+# 5. Color adjustments for 10 seconds
+--pipeline 10s
+# Adjust brightness and contrast
+webcam -> brightness with (brightness: 30) -> contrast with (contrast: 25) -> display with (window_name: "Color Enhanced")
+
+# 6. Advanced computer vision for 12 seconds
+--pipeline 12s
+# Combine multiple processing steps
+webcam -> brightness with (brightness: 20) -> contrast with (contrast: 30) -> gamma with (gamma: 1.1) -> display with (window_name: "Advanced Processing")
+
+# ============================================================================
+# PARALLEL PIPELINES - MULTIPLE SIMULTANEOUS STREAMS
+# ============================================================================
+
+--parallel
+
+# Parallel pipeline 1: Real-time monitoring
+--pipeline monitor
+webcam -> display with (window_name: "Live Monitor")
+
+# Parallel pipeline 2: Edge detection analysis
+--pipeline edges
+webcam -> grayscale -> edges -> display with (window_name: "Edge Analysis")
+
+# Parallel pipeline 3: Motion blur effect
+--pipeline blur_effect
+webcam -> blur with (kernel_size: 15) -> display with (window_name: "Motion Blur")
+
+# Parallel pipeline 4: High contrast analysis
+--pipeline contrast
+webcam -> contrast with (contrast: 50) -> brightness with (brightness: 10) -> display with (window_name: "High Contrast")
+
+--end
+
+# ============================================================================
+# USAGE INSTRUCTIONS
+# ============================================================================
+#
+# Command Line:
+#   python3 main.py --multi examples/comprehensive_demo.vp
+#
+# GUI:
+#   1. Launch GUI: python3 main.py --gui
+#   2. File -> Open Multi-Pipeline...
+#   3. Select this file
+#   4. Pipelines will execute automatically
+#
+# What happens:
+# 1. Sequential: Each pipeline runs for specified time, then next starts
+# 2. Parallel: All pipelines in parallel section run simultaneously
+# 3. Each pipeline has its own display window
+# 4. Press 'q' or ESC in any window to stop that pipeline
+#
+# ============================================================================

@@ -1,0 +1,18 @@
+# Basic Image Filters Examples
+# These examples demonstrate fundamental image processing operations
+
+# 1. Basic color adjustments
+# Adjust brightness and contrast for better visibility
+webcam -> brightness with (brightness: 30) -> contrast with (contrast: 20) -> display
+
+# 2. Color channel manipulation
+# Modify hue and saturation for artistic effects
+webcam -> hue with (hue: 90) -> saturation with (saturation: 50) -> display
+
+# 3. Gamma correction
+# Adjust image brightness using gamma correction (better than simple brightness)
+webcam -> gamma with (gamma: 1.5) -> display
+
+# 4. Histogram equalization
+# Improve image contrast by redistributing intensity values
+webcam -> histogram-eq -> display

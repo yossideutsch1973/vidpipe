@@ -1,0 +1,28 @@
+# VidPipe Language Features Showcase
+# Demonstrating pipeline composition, timing, and modularity
+
+# 1. Pipeline Definitions - Create reusable components
+pipeline basic_prep = webcam -> brightness with (brightness: 20) -> contrast with (contrast: 25)
+pipeline edge_proc = grayscale -> edges -> contours with (min_area: 200)
+pipeline display_hd = resize with (width: 1280, height: 720) -> display with (window_name: "HD Output")
+
+# 2. Sequential Execution with Timing
+# Each pipeline runs for the specified duration
+basic_prep @ 3s -> edge_proc @ 5s -> display_hd
+
+# 3. Parallel Processing
+# Multiple pipelines run simultaneously
+basic_prep | edge_proc -> display
+
+# 4. Complex Composition
+# Combine defined pipelines with inline processing
+basic_prep -> edge_proc -> brightness with (brightness: 30) -> display_hd @ 10s
+
+# 5. Pipeline References
+# Use defined pipelines as building blocks
+pipeline full_analysis = basic_prep -> edge_proc -> display_hd
+full_analysis @ 8s
+
+# 6. Mixed Sequential and Parallel
+# Sequential phases with parallel processing within each phase
+basic_prep @ 2s -> (edge_proc | blur with (kernel_size: 5)) @ 4s -> display_hd

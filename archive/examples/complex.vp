@@ -1,0 +1,2 @@
+# Complex pipeline with multiple stages
+capture -> resize [10]-> grayscale -> (edges | blur) +> threshold -> display

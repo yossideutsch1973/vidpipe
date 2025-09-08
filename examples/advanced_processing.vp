@@ -1,0 +1,22 @@
+# Advanced Image Processing Examples
+# These examples show sophisticated computer vision techniques
+
+# 1. Morphological operations
+# Clean up binary images using morphological operations
+webcam -> threshold -> morphology with (operation: "open", kernel_size: 3) -> display
+
+# 2. Contour detection and drawing
+# Find and highlight object boundaries in the image
+webcam -> grayscale -> edges -> contours with (min_area: 500) -> display
+
+# 3. Corner detection
+# Detect and mark corners/features in the image (useful for tracking)
+webcam -> grayscale -> corners with (max_corners: 50, quality: 0.01) -> display
+
+# 4. Image cropping
+# Extract a region of interest from the video feed
+webcam -> crop with (x: 200, y: 150, width: 400, height: 300) -> display
+
+# 5. Combined processing pipeline
+# Real-time computer vision pipeline with multiple analysis steps
+webcam -> grayscale -> blur with (kernel_size: 3) -> edges -> contours -> display

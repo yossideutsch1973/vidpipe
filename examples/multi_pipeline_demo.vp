@@ -1,0 +1,30 @@
+# Multi-Pipeline Demo
+# This file demonstrates sequential and parallel pipeline execution
+
+# Sequential pipelines with execution times
+# Each pipeline runs for the specified time, then moves to the next
+
+--pipeline 5s
+# Basic webcam display for 5 seconds
+webcam -> display with (window_name: "Basic Feed")
+
+--pipeline 8s
+# Edge detection for 8 seconds
+webcam -> grayscale -> edges -> display with (window_name: "Edges")
+
+--pipeline 6s
+# Blur effect for 6 seconds
+webcam -> blur with (kernel_size: 7) -> display with (window_name: "Blurred")
+
+--parallel
+# Parallel execution - both pipelines run simultaneously
+
+--pipeline webcam_basic
+# Basic webcam feed
+webcam -> display with (window_name: "Parallel Basic")
+
+--pipeline webcam_processed
+# Processed webcam feed
+webcam -> brightness with (brightness: 30) -> contrast with (contrast: 25) -> display with (window_name: "Parallel Enhanced")
+
+--end

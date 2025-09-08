@@ -1,0 +1,83 @@
+# Modular Pipeline Composition Example
+# Demonstrating VidPipe's new language features for composability
+
+# ============================================================================
+# PIPELINE DEFINITIONS - Reusable Components
+# ============================================================================
+
+# Basic preprocessing pipeline
+pipeline preprocess = webcam -> brightness with (brightness: 20) -> contrast with (contrast: 25)
+
+# Edge detection pipeline
+pipeline edge_detect = grayscale -> blur with (kernel_size: 3) -> edges
+
+# Contour analysis pipeline
+pipeline contour_analysis = contours with (min_area: 500) -> display with (window_name: "Contours")
+
+# Full processing chain
+pipeline full_chain = preprocess -> edge_detect -> contour_analysis
+
+# ============================================================================
+# TIMED SEQUENTIAL EXECUTION
+# ============================================================================
+
+# Run preprocessing for 3 seconds
+preprocess @ 3s
+
+# Run edge detection for 5 seconds
+edge_detect @ 5s
+
+# Run full chain for 8 seconds
+full_chain @ 8s
+
+# ============================================================================
+# PARALLEL EXECUTION
+# ============================================================================
+
+# Run multiple analyses simultaneously
+preprocess | edge_detect -> display
+
+# ============================================================================
+# COMPLEX COMPOSITION EXAMPLES
+# ============================================================================
+
+# Sequential with timing and parallel components
+preprocess @ 2s -> (edge_detect | contour_analysis) @ 4s
+
+# Nested pipeline composition
+pipeline enhanced_analysis = preprocess -> edge_detect
+pipeline final_output = enhanced_analysis -> contour_analysis
+
+final_output @ 6s
+
+# ============================================================================
+# MIXED EXECUTION MODES
+# ============================================================================
+
+# Sequential phases with different processing
+preprocess @ 3s -> edge_detect @ 4s -> contour_analysis @ 5s
+
+# Parallel processing of different inputs (if you had multiple cameras)
+# webcam -> preprocess | camera with (device: 1) -> preprocess -> display
+
+# ============================================================================
+# PRACTICAL APPLICATIONS
+# ============================================================================
+
+# Security monitoring with timed analysis
+pipeline security_prep = brightness with (brightness: 30) -> contrast with (contrast: 40)
+pipeline security_analyze = grayscale -> edges -> threshold with (threshold: 100)
+
+security_prep -> security_analyze -> display with (window_name: "Security Feed") @ 10s
+
+# Document processing pipeline
+pipeline doc_prep = brightness with (brightness: 40) -> contrast with (contrast: 60) -> threshold
+pipeline doc_analyze = contours with (min_area: 1000)
+
+doc_prep -> doc_analyze -> display with (window_name: "Document Analysis") @ 15s
+
+# Quality control inspection
+pipeline qc_prep = histogram-eq -> brightness with (brightness: 25)
+pipeline qc_analyze = edges -> contours with (min_area: 200)
+
+qc_prep -> qc_analyze -> display with (window_name: "Quality Control") @ 12s

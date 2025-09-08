@@ -1,0 +1,42 @@
+# VidPipe Showcase Examples
+# Demonstrating the full power and flexibility of VidPipe
+
+# 1. Complete Computer Vision Pipeline
+# Real-time analysis with multiple processing branches
+webcam -> (grayscale -> edges -> contours | blur -> threshold | histogram-eq) -> display
+
+# 2. Multi-Output Professional Setup
+# Display live feed while recording processed version
+webcam -> brightness with (brightness: 20) -> contrast with (contrast: 30) -> gamma with (gamma: 1.1) -> (display with (window_name: "Live HD") | record with (filename: "processed_1080p.avi", fps: 30.0))
+
+# 3. Advanced Feature Detection
+# Detect and highlight corners and contours simultaneously
+webcam -> grayscale -> (corners with (max_corners: 100) | edges -> contours with (min_area: 200)) -> display
+
+# 4. Artistic Multi-Effect Processing
+# Apply different artistic effects to the same source
+webcam -> (saturation with (saturation: 80) -> hue with (hue: 60) | brightness with (brightness: 40) -> contrast with (contrast: 60) | gamma with (gamma: 1.5) -> blur) -> display
+
+# 5. Quality Control Analysis
+# Comprehensive quality analysis pipeline
+webcam -> histogram-eq -> contrast with (contrast: 40) -> (edges -> contours | corners with (max_corners: 50)) -> display
+
+# 6. Real-time Video Enhancement Suite
+# Professional video enhancement with multiple adjustments
+webcam -> brightness with (brightness: 15) -> contrast with (contrast: 25) -> saturation with (saturation: 10) -> gamma with (gamma: 1.1) -> display
+
+# 7. Scientific Imaging Pipeline
+# Enhanced imaging for scientific analysis
+webcam -> histogram-eq -> gamma with (gamma: 1.3) -> contrast with (contrast: 35) -> blur with (kernel_size: 3) -> display
+
+# 8. Security Enhancement System
+# Enhanced visibility for security applications
+webcam -> brightness with (brightness: 30) -> contrast with (contrast: 45) -> gamma with (gamma: 1.2) -> histogram-eq -> display
+
+# 9. Interactive Processing Demo
+# Show different processing techniques side by side
+test-pattern with (pattern: "checkerboard") -> (grayscale -> edges | blur with (kernel_size: 5) | threshold with (threshold: 127) | morphology with (operation: "open")) -> display
+
+# 10. Performance Benchmark Pipeline
+# Test processing performance with complex operations
+webcam -> resize with (width: 1280, height: 720) -> brightness with (brightness: 10) -> contrast with (contrast: 20) -> gamma with (gamma: 1.1) -> histogram-eq -> display

@@ -1,0 +1,26 @@
+# Input Source Examples
+# Different ways to capture or generate video input
+
+# 1. Webcam with different camera IDs
+# Use specific camera device (useful for multi-camera setups)
+webcam with (camera_id: 0) -> display
+
+# 2. Alternative webcam syntax
+# Using the 'camera' alias
+camera with (device: 1) -> display
+
+# 3. Video file input
+# Process pre-recorded video files
+capture with (filename: "input_video.mp4") -> display
+
+# 4. Test pattern generation - Checkerboard
+# Generate synthetic test patterns for development/testing
+test-pattern with (width: 640, height: 480, pattern: "checkerboard") -> display
+
+# 5. Test pattern generation - Gradient
+# Useful for testing image processing algorithms
+test-pattern with (width: 800, height: 600, pattern: "gradient") -> display
+
+# 6. Custom resolution test pattern
+# High-resolution test pattern for quality testing
+test-pattern with (width: 1920, height: 1080) -> display

@@ -1,0 +1,3 @@
+# Record processed video to file
+# Capture webcam, apply edge detection, display and record simultaneously
+webcam -> edges -> (display | record with (filename: "edges_output.avi", fps: 30.0))

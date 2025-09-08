@@ -1,0 +1,42 @@
+# Creative and Fun Examples
+# Artistic and experimental video processing effects
+
+# 1. Retro/Vintage Effect
+# Create a vintage film look with adjusted colors and contrast
+webcam -> brightness with (brightness: -10) -> contrast with (contrast: 40) -> gamma with (gamma: 1.3) -> saturation with (saturation: -20) -> display
+
+# 2. High Contrast Drama
+# Cinematic high-contrast effect for dramatic scenes
+webcam -> brightness with (brightness: -20) -> contrast with (contrast: 80) -> gamma with (gamma: 1.5) -> display
+
+# 3. Cool Blue Effect
+# Create a cool, underwater-like effect
+webcam -> hue with (hue: 210) -> saturation with (saturation: 30) -> brightness with (brightness: -15) -> display
+
+# 4. Warm Sunset Effect
+# Create a warm, golden sunset-like atmosphere
+webcam -> hue with (hue: 30) -> saturation with (saturation: 60) -> brightness with (brightness: 20) -> gamma with (gamma: 0.8) -> display
+
+# 5. Neon Glow Effect
+# High contrast with boosted colors for a neon-like appearance
+webcam -> contrast with (contrast: 60) -> saturation with (saturation: 80) -> brightness with (brightness: 10) -> gamma with (gamma: 1.2) -> display
+
+# 6. Monochrome Film Noir
+# Classic black and white film noir style
+webcam -> grayscale -> brightness with (brightness: -15) -> contrast with (contrast: 70) -> gamma with (gamma: 1.4) -> display
+
+# 7. Cyberpunk Effect
+# High-tech, futuristic look with boosted colors and contrast
+webcam -> saturation with (saturation: 70) -> contrast with (contrast: 50) -> hue with (hue: 270) -> brightness with (brightness: 15) -> display
+
+# 8. Dreamy Soft Focus
+# Soft, dreamy effect with reduced sharpness and warm tones
+webcam -> blur with (kernel_size: 7) -> brightness with (brightness: 10) -> saturation with (saturation: -15) -> gamma with (gamma: 0.9) -> display
+
+# 9. Solarized Effect
+# Classic solarization effect with inverted colors in highlights
+webcam -> brightness with (brightness: 50) -> contrast with (contrast: 100) -> gamma with (gamma: 2.0) -> display
+
+# 10. Matrix-style Effect
+# Green-tinted, high-contrast effect inspired by The Matrix
+webcam -> hue with (hue: 120) -> saturation with (saturation: 100) -> brightness with (brightness: -10) -> contrast with (contrast: 60) -> display

@@ -1,0 +1,3 @@
+# Multiple processing chains
+# Apply different filters and display results
+webcam -> grayscale -> (edges | blur | threshold with (threshold: 100)) -> display

@@ -1,0 +1,3 @@
+# Simple edge detection pipeline
+# Capture from webcam, convert to grayscale, detect edges, display
+webcam -> grayscale -> edges -> display

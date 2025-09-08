@@ -1,0 +1,3 @@
+# Real-time Harris Corner Detection
+# Live camera feed with corner detection and performance monitoring
+camera -> grayscale -> harris -> performance

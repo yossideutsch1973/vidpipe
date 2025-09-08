@@ -1,0 +1,17 @@
+# Live Camera Examples for VidPipe
+# These demonstrate real-time camera processing with your MacBook camera
+
+# Basic live feed
+webcam -> window
+
+# Real-time edge detection (uncomment to use)
+# webcam -> grayscale -> edges -> window
+
+# Live blur effect (uncomment to use)  
+# webcam -> blur -> window
+
+# Live corner detection (uncomment to use)
+# webcam -> grayscale -> corners -> window
+
+# Multiple parallel effects (uncomment to use)
+# webcam -> grayscale &> blur &> edges -> window
