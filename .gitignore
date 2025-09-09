@@ -137,3 +137,4 @@ recordings/
 output/
 screenshots/
 temp/
+node_modules/

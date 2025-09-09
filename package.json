@@ -1,0 +1,15 @@
+{
+  "name": "vidpipe",
+  "version": "1.0.0",
+  "description": "VidPipe is a Python implementation of a composable functional pipeline language designed for real-time video processing.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
