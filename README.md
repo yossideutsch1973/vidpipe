@@ -426,3 +426,8 @@ MIT License - see LICENSE file for details.
 Transform your video processing workflows with VidPipe's advanced composable language. From simple edge detection to complex multi-stream analysis, VidPipe makes sophisticated computer vision accessible and elegant.
 
 **🚀 Ready to build amazing video processing applications?**
+
+## 🌐 Web Frontend & GitHub Pages
+
+A minimal web frontend is available under the `docs/` directory. Build the TypeScript source with `npm run build` and enable GitHub Pages from the repository settings (main branch, /docs folder) to host it for free.
+
