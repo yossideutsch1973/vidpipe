@@ -396,7 +396,25 @@ _display_manager = DisplayManager()
 
 # Sink functions
 def display_sink(frame: Frame, window_name: str = "VidPipe", **kwargs):
-    """Display frame in OpenCV window"""
+    """Queue a frame to be shown in an OpenCV window.
+
+    Parameters
+    ----------
+    frame: Frame
+        The video frame to display.
+    window_name: str, optional
+        Name of the window used for display.
+
+    Returns
+    -------
+    bool
+        ``True`` if the frame was queued successfully, ``False`` otherwise.
+
+    Notes
+    -----
+    Frames are only rendered when ``DisplayManager.process_display_queue`` is
+    called from the main thread.
+    """
     try:
         # Add frame to display queue (thread-safe)
         _display_manager.add_frame(frame, window_name)
@@ -412,20 +430,39 @@ def window_sink(frame: Frame, **kwargs):
 
 
 def save_sink(frame: Frame, filename: str = "frame_{timestamp}.png", **kwargs):
-    """Save frame to file"""
+    """Save a frame to an image file.
+
+    Parameters
+    ----------
+    frame: Frame
+        The video frame to save.
+    filename: str, optional
+        Destination filename. ``{timestamp}`` in the name is replaced with the
+        frame's timestamp to make filenames unique.
+    """
     if "{timestamp}" in filename:
         filename = filename.format(timestamp=int(frame.timestamp))
     cv2.imwrite(filename, frame.data)
 
 
 def record_sink(frame: Frame, filename: str = "output.avi", fps: float = 30.0, **kwargs):
-    """Record frames to video file"""
+    """Append frames to a video file.
+
+    Parameters
+    ----------
+    frame: Frame
+        The video frame to write.
+    filename: str, optional
+        Output video filename. The writer is created lazily on first call.
+    fps: float, optional
+        Frames-per-second used for the output file.
+    """
     if not hasattr(record_sink, 'writer'):
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         record_sink.writer = cv2.VideoWriter(
             filename, fourcc, fps, (frame.width, frame.height)
         )
-    
+
     record_sink.writer.write(frame.data)
 
 
@@ -712,25 +749,41 @@ def corners_filter(frame: Frame, max_corners: int = 100, quality: float = 0.01, 
 
 
 def optical_flow_filter(frame: Frame, **kwargs) -> Frame:
-    """Compute optical flow (simplified version)"""
-    # This is a placeholder implementation
-    # A full optical flow implementation would require frame history
-    # For now, just return the frame with a message
-    if frame.format == FrameFormat.GRAY:
-        output_data = frame.data.copy()
-    else:
-        gray_frame = grayscale_filter(frame)
-        output_data = gray_frame.data
-    
-    # Add text indicating optical flow
-    cv2.putText(output_data, "Optical Flow", (10, 30), 
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-    
+    """Visualize dense optical flow using the Farneback algorithm."""
+    # Convert input to grayscale
+    gray = grayscale_filter(frame).data if frame.format != FrameFormat.GRAY else frame.data
+
+    # Initialize previous frame storage on first call
+    if not hasattr(optical_flow_filter, "_prev"):
+        optical_flow_filter._prev = gray
+        blank = np.zeros((frame.height, frame.width, 3), dtype=np.uint8)
+        blank[..., 1] = 255
+        return Frame(
+            data=blank,
+            format=FrameFormat.BGR,
+            width=frame.width,
+            height=frame.height,
+            timestamp=frame.timestamp,
+            metadata=frame.metadata.copy(),
+        )
+
+    flow = cv2.calcOpticalFlowFarneback(
+        optical_flow_filter._prev, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0
+    )
+    optical_flow_filter._prev = gray
+
+    magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+    hsv = np.zeros((frame.height, frame.width, 3), dtype=np.uint8)
+    hsv[..., 0] = angle * 180 / np.pi / 2
+    hsv[..., 1] = 255
+    hsv[..., 2] = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX)
+    bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+
     return Frame(
-        data=output_data,
-        format=FrameFormat.GRAY,
+        data=bgr,
+        format=FrameFormat.BGR,
         width=frame.width,
         height=frame.height,
         timestamp=frame.timestamp,
-        metadata=frame.metadata.copy()
+        metadata=frame.metadata.copy(),
     )
