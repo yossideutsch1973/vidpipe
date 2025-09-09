@@ -431,3 +431,5 @@ Transform your video processing workflows with VidPipe's advanced composable lan
 
 A minimal web frontend is available under the `docs/` directory. Build the TypeScript source with `npm run build` and enable GitHub Pages from the repository settings (main branch, /docs folder) to host it for free.
 
+The page renders the curated list of computer vision and pipeline architecture texts, showing how TypeScript can drive simple dynamic content.
+
