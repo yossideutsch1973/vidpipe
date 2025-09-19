@@ -5,7 +5,7 @@ Runtime engine for executing VidPipe pipelines
 from typing import Dict, Any, Callable, Optional
 from .ast_nodes import *
 from .pipeline import Pipeline, PipelineNode as ExecNode, Queue
-from .functions import FunctionRegistry, _display_manager
+from .functions import FunctionRegistry
 
 
 class Runtime:
@@ -213,7 +213,7 @@ class Runtime:
 
         return pipeline_exec
     
-    def execute(self, ast: ProgramNode):
+    def execute(self, ast: ProgramNode, *, pump_display: Optional[Callable[[], bool]] = None):
         """Execute the compiled pipeline"""
         pipeline = self.compile(ast)
         pipeline.start()
@@ -224,34 +224,21 @@ class Runtime:
                 import time
                 time.sleep(0.1)
 
-                # Process display queue in main thread (only if not in GUI mode)
-                # GUI mode will handle display queue processing separately
-                try:
-                    # Check if we're likely in GUI mode by looking for Qt imports
-                    gui_mode = False
+                if pump_display:
                     try:
-                        import sys
-                        for module_name in sys.modules:
-                            if 'PyQt6' in module_name or 'PySide6' in module_name:
-                                gui_mode = True
-                                break
-                    except:
-                        pass
-
-                    if not gui_mode:
-                        result = _display_manager.process_display_queue()
+                        result = pump_display()
                         if result is False:  # User pressed 'q' or ESC
                             print("\nStopping pipeline (user pressed quit)...")
                             break
-
-                except Exception as e:
-                    print(f"Display processing error: {e}")
+                    except Exception as e:
+                        print(f"Display processing error: {e}")
 
         except KeyboardInterrupt:
             print("\nStopping pipeline...")
         finally:
             pipeline.stop()
             pipeline.wait()
-            # Clean up display windows
-            import cv2
-            cv2.destroyAllWindows()
+            if pump_display:
+                # Clean up display windows
+                import cv2
+                cv2.destroyAllWindows()

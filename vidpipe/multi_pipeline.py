@@ -7,6 +7,7 @@ import time
 import threading
 from typing import List, Dict, Any, Optional
 from . import Lexer, Parser, Runtime
+from .functions import _display_manager
 
 
 class PipelineStep:
@@ -26,6 +27,24 @@ class MultiPipelineExecutor:
         self.parallel_pipelines: List[PipelineStep] = []
         self.running_pipelines: List[Dict] = []
         self.stop_flag = False
+        self._display_error_reported = False
+
+    def _pump_display(self) -> bool:
+        """Process queued display frames and react to user input."""
+        try:
+            result = _display_manager.process_display_queue()
+        except Exception as exc:
+            if not self._display_error_reported:
+                print(f"Display processing error: {exc}")
+                self._display_error_reported = True
+            return True
+
+        if result is False:
+            print("Display window closed - stopping pipelines...")
+            self.stop()
+            return False
+
+        return True
 
     def parse_multi_pipeline_file(self, file_path: str):
         """Parse a multi-pipeline file"""
@@ -107,16 +126,22 @@ class MultiPipelineExecutor:
             if pipeline.duration:
                 start_time = time.time()
                 while time.time() - start_time < pipeline.duration and not self.stop_flag:
+                    if not self._pump_display():
+                        break
                     time.sleep(0.1)
             else:
-                # Wait until stopped
                 while pipeline_thread.is_alive() and not self.stop_flag:
+                    if not self._pump_display():
+                        break
                     time.sleep(0.1)
 
             # Stop the pipeline
             if pipeline_thread.is_alive():
                 print(f"Stopping pipeline: {pipeline.name}")
                 # Note: In a real implementation, we'd need a way to stop individual pipelines
+
+            if self.stop_flag:
+                break
 
         print("\nSequential execution completed!")
 
@@ -135,6 +160,11 @@ class MultiPipelineExecutor:
             threads.append(thread)
 
         # Wait for all pipelines to complete or stop signal
+        while any(thread.is_alive() for thread in threads) and not self.stop_flag:
+            if not self._pump_display():
+                break
+            time.sleep(0.1)
+
         for thread in threads:
             thread.join()
 
@@ -143,6 +173,7 @@ class MultiPipelineExecutor:
     def execute_all(self):
         """Execute all pipelines (sequential first, then parallel)"""
         self.stop_flag = False
+        self._display_error_reported = False
 
         if self.sequential_pipelines:
             self.execute_sequential()
@@ -152,8 +183,14 @@ class MultiPipelineExecutor:
 
     def stop(self):
         """Stop all pipeline execution"""
-        print("Stopping all pipelines...")
+        if not self.stop_flag:
+            print("Stopping all pipelines...")
         self.stop_flag = True
+
+        for entry in list(self.running_pipelines):
+            runtime = entry.get("runtime")
+            if runtime and runtime.pipeline:
+                runtime.pipeline.stop()
 
     def _execute_single_pipeline(self, pipeline: PipelineStep):
         """Execute a single pipeline"""
@@ -169,7 +206,13 @@ class MultiPipelineExecutor:
             ast = parser.parse()
 
             runtime = Runtime()
-            runtime.execute(ast)
+            entry = {"runtime": runtime}
+            self.running_pipelines.append(entry)
+            try:
+                runtime.execute(ast)
+            finally:
+                if entry in self.running_pipelines:
+                    self.running_pipelines.remove(entry)
 
         except Exception as e:
             print(f"Error in pipeline {pipeline.name}: {e}")

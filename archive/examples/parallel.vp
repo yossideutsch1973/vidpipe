@@ -1,3 +1,0 @@
-# Parallel processing example
-# Split the stream into multiple processing paths
-capture -> grayscale &> edges &> blur &> threshold

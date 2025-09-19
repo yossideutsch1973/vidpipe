@@ -1,3 +1,0 @@
-# Buffered async processing
-# Use buffer of 20 frames for smooth async processing
-capture [20]-> blur ~> edges -> display

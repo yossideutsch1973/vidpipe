@@ -1,2 +1,0 @@
-# Simple edge detection pipeline
-capture -> grayscale -> edges -> display

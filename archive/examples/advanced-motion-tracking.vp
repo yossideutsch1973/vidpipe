@@ -1,3 +1,0 @@
-# Advanced Motion Tracking Pipeline
-# Simulates live camera -> motion detection -> optical flow analysis
-camera -> motion -> grayscale -> flow -> perf
