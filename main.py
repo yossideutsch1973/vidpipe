@@ -6,6 +6,7 @@ Main entry point for VidPipe
 import sys
 import argparse
 from vidpipe import Lexer, Parser, Runtime, execute_multi_pipeline_file
+from vidpipe.functions import _display_manager
 
 
 def run_cli(args):
@@ -60,7 +61,7 @@ def run_cli(args):
         
         # Execute pipeline
         runtime = Runtime()
-        runtime.execute(ast)
+        runtime.execute(ast, pump_display=_display_manager.process_display_queue)
         
     except Exception as e:
         print(f"Error: {e}")

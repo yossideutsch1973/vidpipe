@@ -1,3 +1,0 @@
-# Parallel Computer Vision Pipeline
-# Multiple CV algorithms running in parallel with performance monitoring
-camera -> grayscale &> edges &> corners &> flow -> perf

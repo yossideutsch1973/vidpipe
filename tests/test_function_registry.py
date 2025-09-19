@@ -13,3 +13,4 @@ def test_register_custom_function():
     func_def = registry.get_function("dummy")
     assert func_def is not None
     assert callable(func_def.function)
+    assert func_def.parameters == {}

@@ -2,14 +2,29 @@
 Built-in video processing functions for VidPipe
 """
 
-import cv2
 import numpy as np
 from typing import Optional, Dict, Any, Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from .pipeline import Frame, FrameFormat
 import time
 import threading
 from queue import Queue
+
+try:
+    import cv2  # type: ignore
+except ImportError as exc:  # pragma: no cover - exercised only on headless systems
+    cv2 = None  # type: ignore
+    _CV2_IMPORT_ERROR = exc
+else:  # pragma: no cover - exercised when OpenCV is available
+    _CV2_IMPORT_ERROR = None
+
+
+def _require_cv2():
+    """Ensure OpenCV is available before executing a function that depends on it."""
+    if cv2 is None:
+        raise RuntimeError(
+            "OpenCV (cv2) is required for this operation. Install opencv-python to enable video processing."
+        ) from _CV2_IMPORT_ERROR
 
 
 @dataclass
@@ -20,6 +35,7 @@ class FunctionDef:
     is_source: bool = False
     is_sink: bool = False
     description: str = ""
+    parameters: Dict[str, str] = field(default_factory=dict)
 
 
 class FunctionRegistry:
@@ -29,15 +45,17 @@ class FunctionRegistry:
         self.functions: Dict[str, FunctionDef] = {}
         self.register_builtin_functions()
     
-    def register(self, name: str, function: Callable, is_source: bool = False, 
-                is_sink: bool = False, description: str = ""):
+    def register(self, name: str, function: Callable, is_source: bool = False,
+                is_sink: bool = False, description: str = "",
+                parameters: Optional[Dict[str, str]] = None):
         """Register a function"""
         self.functions[name] = FunctionDef(
             name=name,
             function=function,
             is_source=is_source,
             is_sink=is_sink,
-            description=description
+            description=description,
+            parameters=parameters or {}
         )
     
     def get_function(self, name: str) -> Optional[FunctionDef]:
@@ -52,69 +70,205 @@ class FunctionRegistry:
         """Register built-in video processing functions"""
         
         # Source functions
-        self.register("webcam", webcam_source, is_source=True, 
-                     description="Capture frames from webcam")
-        self.register("camera", camera_source, is_source=True,
-                     description="Capture frames from camera")
-        self.register("capture", capture_source, is_source=True,
-                     description="Capture frames from video file")
-        self.register("test-pattern", test_pattern_source, is_source=True,
-                     description="Generate test pattern frames")
+        self.register(
+            "webcam",
+            webcam_source,
+            is_source=True,
+            description="Capture frames from webcam",
+            parameters={"camera_id": "Camera device ID (default: 0)"}
+        )
+        self.register(
+            "camera",
+            camera_source,
+            is_source=True,
+            description="Capture frames from camera",
+            parameters={"device": "Camera device ID (default: 0)"}
+        )
+        self.register(
+            "capture",
+            capture_source,
+            is_source=True,
+            description="Capture frames from video file",
+            parameters={"filename": "Video file path"}
+        )
+        self.register(
+            "test-pattern",
+            test_pattern_source,
+            is_source=True,
+            description="Generate test pattern frames",
+            parameters={
+                "width": "Frame width (default: 640)",
+                "height": "Frame height (default: 480)",
+                "pattern": "Pattern type: 'checkerboard', 'gradient' (default: 'checkerboard')"
+            }
+        )
         
         # Processing functions
         self.register("grayscale", grayscale_filter,
                      description="Convert to grayscale")
         self.register("gray", grayscale_filter,
                      description="Convert to grayscale (alias)")
-        self.register("blur", blur_filter,
-                     description="Apply Gaussian blur")
-        self.register("edges", edge_filter,
-                     description="Detect edges using Canny")
-        self.register("threshold", threshold_filter,
-                     description="Apply binary threshold")
-        self.register("resize", resize_filter,
-                     description="Resize frame")
-        self.register("flip", flip_filter,
-                     description="Flip frame horizontally or vertically")
-        self.register("rotate", rotate_filter,
-                     description="Rotate frame")
-        self.register("crop", crop_filter,
-                     description="Crop frame to specified region")
-        self.register("brightness", brightness_filter,
-                     description="Adjust brightness")
-        self.register("contrast", contrast_filter,
-                     description="Adjust contrast")
-        self.register("hue", hue_filter,
-                     description="Adjust hue")
-        self.register("saturation", saturation_filter,
-                     description="Adjust saturation")
-        self.register("gamma", gamma_filter,
-                     description="Apply gamma correction")
+        self.register(
+            "blur",
+            blur_filter,
+            description="Apply Gaussian blur",
+            parameters={
+                "kernel_size": "Blur kernel size (default: 5)",
+                "sigma": "Gaussian sigma (default: kernel_size/6)"
+            }
+        )
+        self.register(
+            "edges",
+            edge_filter,
+            description="Detect edges using Canny",
+            parameters={
+                "low_threshold": "Low threshold for Canny (default: 50)",
+                "high_threshold": "High threshold for Canny (default: 150)"
+            }
+        )
+        self.register(
+            "threshold",
+            threshold_filter,
+            description="Apply binary threshold",
+            parameters={
+                "threshold": "Threshold value (default: 127)",
+                "max_val": "Maximum value (default: 255)"
+            }
+        )
+        self.register(
+            "resize",
+            resize_filter,
+            description="Resize frame",
+            parameters={
+                "width": "New width",
+                "height": "New height",
+                "scale": "Scale factor (alternative to width/height)"
+            }
+        )
+        self.register(
+            "flip",
+            flip_filter,
+            description="Flip frame horizontally or vertically",
+            parameters={
+                "horizontal": "Flip horizontally (default: False)",
+                "vertical": "Flip vertically (default: False)"
+            }
+        )
+        self.register(
+            "rotate",
+            rotate_filter,
+            description="Rotate frame",
+            parameters={"angle": "Rotation angle in degrees"}
+        )
+        self.register(
+            "crop",
+            crop_filter,
+            description="Crop frame to specified region",
+            parameters={
+                "x": "X coordinate of crop region (default: 0)",
+                "y": "Y coordinate of crop region (default: 0)",
+                "width": "Width of crop region (default: remaining width)",
+                "height": "Height of crop region (default: remaining height)"
+            }
+        )
+        self.register(
+            "brightness",
+            brightness_filter,
+            description="Adjust brightness",
+            parameters={"brightness": "Brightness adjustment (-100 to 100, default: 0)"}
+        )
+        self.register(
+            "contrast",
+            contrast_filter,
+            description="Adjust contrast",
+            parameters={"contrast": "Contrast adjustment (-100 to 100, default: 0)"}
+        )
+        self.register(
+            "hue",
+            hue_filter,
+            description="Adjust hue",
+            parameters={"hue": "Hue adjustment in degrees (default: 0)"}
+        )
+        self.register(
+            "saturation",
+            saturation_filter,
+            description="Adjust saturation",
+            parameters={"saturation": "Saturation adjustment (-100 to 100, default: 0)"}
+        )
+        self.register(
+            "gamma",
+            gamma_filter,
+            description="Apply gamma correction",
+            parameters={"gamma": "Gamma correction value (0.1 to 3.0, default: 1.0)"}
+        )
         self.register("histogram-eq", histogram_equalization_filter,
                      description="Apply histogram equalization")
-        self.register("morphology", morphology_filter,
-                     description="Apply morphological operations")
-        self.register("contours", contours_filter,
-                     description="Find and draw contours")
-        self.register("corners", corners_filter,
-                     description="Detect corners using Harris")
+        self.register(
+            "morphology",
+            morphology_filter,
+            description="Apply morphological operations",
+            parameters={
+                "operation": "Morphological operation: 'open', 'close', 'erode', 'dilate' (default: 'open')",
+                "kernel_size": "Kernel size (default: 5)"
+            }
+        )
+        self.register(
+            "contours",
+            contours_filter,
+            description="Find and draw contours",
+            parameters={"min_area": "Minimum contour area (default: 100)"}
+        )
+        self.register(
+            "corners",
+            corners_filter,
+            description="Detect corners using Harris",
+            parameters={
+                "max_corners": "Maximum number of corners (default: 100)",
+                "quality": "Corner quality threshold (default: 0.01)",
+                "min_distance": "Minimum distance between corners (default: 10)"
+            }
+        )
         self.register("optical-flow", optical_flow_filter,
                      description="Compute optical flow")
         
         # Sink functions
-        self.register("display", display_sink, is_sink=True,
-                     description="Display frames in window")
-        self.register("window", window_sink, is_sink=True,
-                     description="Display frames in window (alias)")
-        self.register("save", save_sink, is_sink=True,
-                     description="Save frames to file")
-        self.register("record", record_sink, is_sink=True,
-                     description="Record frames to video file")
+        self.register(
+            "display",
+            display_sink,
+            is_sink=True,
+            description="Display frames in window",
+            parameters={"window_name": "Window name (default: 'VidPipe')"}
+        )
+        self.register(
+            "window",
+            window_sink,
+            is_sink=True,
+            description="Display frames in window (alias)",
+            parameters={"window_name": "Window name (default: 'VidPipe')"}
+        )
+        self.register(
+            "save",
+            save_sink,
+            is_sink=True,
+            description="Save frames to file",
+            parameters={"filename": "Output filename pattern"}
+        )
+        self.register(
+            "record",
+            record_sink,
+            is_sink=True,
+            description="Record frames to video file",
+            parameters={
+                "filename": "Output video filename (default: 'output.avi')",
+                "fps": "Frames per second (default: 30.0)"
+            }
+        )
 
 
 # Source functions
 def webcam_source(frame: Optional[Frame], camera_id: int = 0, **kwargs) -> Optional[Frame]:
     """Capture frame from webcam"""
+    _require_cv2()
     if not hasattr(webcam_source, 'cap'):
         webcam_source.cap = cv2.VideoCapture(camera_id)
         if not webcam_source.cap.isOpened():
@@ -142,6 +296,7 @@ def camera_source(frame: Optional[Frame], device: int = 0, **kwargs) -> Optional
 
 def capture_source(frame: Optional[Frame], filename: str = "", **kwargs) -> Optional[Frame]:
     """Capture frames from video file"""
+    _require_cv2()
     if not hasattr(capture_source, 'cap'):
         if not filename:
             print("Error: filename parameter required for capture source")
@@ -201,6 +356,7 @@ def test_pattern_source(frame: Optional[Frame], width: int = 640, height: int = 
 # Processing functions
 def grayscale_filter(frame: Frame, **kwargs) -> Frame:
     """Convert frame to grayscale"""
+    _require_cv2()
     if frame.format == FrameFormat.GRAY:
         return frame
     
@@ -223,6 +379,7 @@ def grayscale_filter(frame: Frame, **kwargs) -> Frame:
 
 def blur_filter(frame: Frame, kernel_size: int = 5, sigma: float = 0, **kwargs) -> Frame:
     """Apply Gaussian blur to frame"""
+    _require_cv2()
     if sigma == 0:
         sigma = kernel_size / 6.0
     
@@ -240,6 +397,7 @@ def blur_filter(frame: Frame, kernel_size: int = 5, sigma: float = 0, **kwargs) 
 
 def edge_filter(frame: Frame, low_threshold: int = 50, high_threshold: int = 150, **kwargs) -> Frame:
     """Detect edges using Canny edge detection"""
+    _require_cv2()
     # Convert to grayscale if needed
     if frame.format != FrameFormat.GRAY:
         if frame.format == FrameFormat.BGR:
@@ -265,6 +423,7 @@ def edge_filter(frame: Frame, low_threshold: int = 50, high_threshold: int = 150
 
 def threshold_filter(frame: Frame, threshold: int = 127, max_val: int = 255, **kwargs) -> Frame:
     """Apply binary threshold"""
+    _require_cv2()
     # Convert to grayscale if needed
     if frame.format != FrameFormat.GRAY:
         gray_frame = grayscale_filter(frame)
@@ -284,9 +443,10 @@ def threshold_filter(frame: Frame, threshold: int = 127, max_val: int = 255, **k
     )
 
 
-def resize_filter(frame: Frame, width: int = None, height: int = None, 
+def resize_filter(frame: Frame, width: int = None, height: int = None,
                  scale: float = None, **kwargs) -> Frame:
     """Resize frame"""
+    _require_cv2()
     if scale:
         new_width = int(frame.width * scale)
         new_height = int(frame.height * scale)
@@ -308,6 +468,7 @@ def resize_filter(frame: Frame, width: int = None, height: int = None,
 
 def flip_filter(frame: Frame, horizontal: bool = False, vertical: bool = False, **kwargs) -> Frame:
     """Flip frame"""
+    _require_cv2()
     flip_code = None
     if horizontal and vertical:
         flip_code = -1
@@ -333,6 +494,7 @@ def flip_filter(frame: Frame, horizontal: bool = False, vertical: bool = False, 
 
 def rotate_filter(frame: Frame, angle: float = 0, **kwargs) -> Frame:
     """Rotate frame by angle degrees"""
+    _require_cv2()
     if angle == 0:
         return frame
     
@@ -365,6 +527,7 @@ class DisplayManager:
 
     def process_display_queue(self):
         """Process the display queue (call this from main thread)"""
+        _require_cv2()
         while not self.display_queue.empty():
             try:
                 frame, window_name = self.display_queue.get_nowait()
@@ -440,6 +603,7 @@ def save_sink(frame: Frame, filename: str = "frame_{timestamp}.png", **kwargs):
         Destination filename. ``{timestamp}`` in the name is replaced with the
         frame's timestamp to make filenames unique.
     """
+    _require_cv2()
     if "{timestamp}" in filename:
         filename = filename.format(timestamp=int(frame.timestamp))
     cv2.imwrite(filename, frame.data)
@@ -457,6 +621,7 @@ def record_sink(frame: Frame, filename: str = "output.avi", fps: float = 30.0, *
     fps: float, optional
         Frames-per-second used for the output file.
     """
+    _require_cv2()
     if not hasattr(record_sink, 'writer'):
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         record_sink.writer = cv2.VideoWriter(
@@ -494,6 +659,7 @@ def crop_filter(frame: Frame, x: int = 0, y: int = 0, width: int = None, height:
 
 def brightness_filter(frame: Frame, brightness: float = 0, **kwargs) -> Frame:
     """Adjust frame brightness"""
+    _require_cv2()
     # brightness: -100 to 100, where 0 is no change
     brightness = max(-100, min(100, brightness))
     
@@ -515,6 +681,7 @@ def brightness_filter(frame: Frame, brightness: float = 0, **kwargs) -> Frame:
 
 def contrast_filter(frame: Frame, contrast: float = 0, **kwargs) -> Frame:
     """Adjust frame contrast"""
+    _require_cv2()
     # contrast: -100 to 100, where 0 is no change
     contrast = max(-100, min(100, contrast))
     
@@ -535,6 +702,7 @@ def contrast_filter(frame: Frame, contrast: float = 0, **kwargs) -> Frame:
 
 def hue_filter(frame: Frame, hue: float = 0, **kwargs) -> Frame:
     """Adjust frame hue"""
+    _require_cv2()
     if frame.format == FrameFormat.GRAY:
         return frame  # Hue adjustment not applicable to grayscale
     
@@ -565,6 +733,7 @@ def hue_filter(frame: Frame, hue: float = 0, **kwargs) -> Frame:
 
 def saturation_filter(frame: Frame, saturation: float = 0, **kwargs) -> Frame:
     """Adjust frame saturation"""
+    _require_cv2()
     if frame.format == FrameFormat.GRAY:
         return frame  # Saturation adjustment not applicable to grayscale
     
@@ -595,6 +764,7 @@ def saturation_filter(frame: Frame, saturation: float = 0, **kwargs) -> Frame:
 
 def gamma_filter(frame: Frame, gamma: float = 1.0, **kwargs) -> Frame:
     """Apply gamma correction"""
+    _require_cv2()
     # gamma: 0.1 to 3.0, where 1.0 is no change
     gamma = max(0.1, min(3.0, gamma))
     
@@ -617,6 +787,7 @@ def gamma_filter(frame: Frame, gamma: float = 1.0, **kwargs) -> Frame:
 
 def histogram_equalization_filter(frame: Frame, **kwargs) -> Frame:
     """Apply histogram equalization"""
+    _require_cv2()
     if frame.format == FrameFormat.GRAY:
         # Grayscale histogram equalization
         equalized_data = cv2.equalizeHist(frame.data)
@@ -645,6 +816,7 @@ def histogram_equalization_filter(frame: Frame, **kwargs) -> Frame:
 
 def morphology_filter(frame: Frame, operation: str = "open", kernel_size: int = 5, **kwargs) -> Frame:
     """Apply morphological operations"""
+    _require_cv2()
     # Convert to grayscale if needed
     if frame.format != FrameFormat.GRAY:
         gray_frame = grayscale_filter(frame)
@@ -679,6 +851,7 @@ def morphology_filter(frame: Frame, operation: str = "open", kernel_size: int = 
 
 def contours_filter(frame: Frame, min_area: int = 100, **kwargs) -> Frame:
     """Find and draw contours"""
+    _require_cv2()
     # Convert to grayscale if needed
     if frame.format != FrameFormat.GRAY:
         gray_frame = grayscale_filter(frame)
@@ -715,6 +888,7 @@ def contours_filter(frame: Frame, min_area: int = 100, **kwargs) -> Frame:
 
 def corners_filter(frame: Frame, max_corners: int = 100, quality: float = 0.01, min_distance: float = 10, **kwargs) -> Frame:
     """Detect corners using Harris corner detection"""
+    _require_cv2()
     # Convert to grayscale if needed
     if frame.format != FrameFormat.GRAY:
         gray_frame = grayscale_filter(frame)
@@ -750,6 +924,7 @@ def corners_filter(frame: Frame, max_corners: int = 100, quality: float = 0.01, 
 
 def optical_flow_filter(frame: Frame, **kwargs) -> Frame:
     """Visualize dense optical flow using the Farneback algorithm."""
+    _require_cv2()
     # Convert input to grayscale
     gray = grayscale_filter(frame).data if frame.format != FrameFormat.GRAY else frame.data
 

@@ -170,84 +170,16 @@ class FunctionBrowser(QWidget):
         else:
             details += f"  previous-function -> {func_def.name} -> next-function\n"
         
-        # Add common parameters based on function name
-        params = self.get_function_parameters(func_def.name)
+        params = func_def.parameters if hasattr(func_def, 'parameters') else {}
         if params:
             details += "\nParameters:\n"
             for param, description in params.items():
                 details += f"  {param}: {description}\n"
-            
+
             details += f"\nWith parameters:\n"
             details += f"  {func_def.name} with ({', '.join(f'{k}: value' for k in params.keys())})\n"
-        
+
         self.details_text.setPlainText(details)
-    
-    def get_function_parameters(self, name: str) -> dict:
-        """Get parameter descriptions for common functions"""
-        params = {
-            "webcam": {"camera_id": "Camera device ID (default: 0)"},
-            "camera": {"device": "Camera device ID (default: 0)"},
-            "capture": {"filename": "Video file path"},
-            "test-pattern": {
-                "width": "Frame width (default: 640)",
-                "height": "Frame height (default: 480)",
-                "pattern": "Pattern type: 'checkerboard', 'gradient' (default: 'checkerboard')"
-            },
-            "blur": {
-                "kernel_size": "Blur kernel size (default: 5)",
-                "sigma": "Gaussian sigma (default: kernel_size/6)"
-            },
-            "edges": {
-                "low_threshold": "Low threshold for Canny (default: 50)",
-                "high_threshold": "High threshold for Canny (default: 150)"
-            },
-            "threshold": {
-                "threshold": "Threshold value (default: 127)",
-                "max_val": "Maximum value (default: 255)"
-            },
-            "resize": {
-                "width": "New width",
-                "height": "New height",
-                "scale": "Scale factor (alternative to width/height)"
-            },
-            "flip": {
-                "horizontal": "Flip horizontally (default: False)",
-                "vertical": "Flip vertically (default: False)"
-            },
-            "rotate": {"angle": "Rotation angle in degrees"},
-            "display": {"window_name": "Window name (default: 'VidPipe')"},
-            "window": {"window_name": "Window name (default: 'VidPipe')"},
-            "save": {"filename": "Output filename pattern"},
-            "record": {
-                "filename": "Output video filename (default: 'output.avi')",
-                "fps": "Frames per second (default: 30.0)"
-            },
-            "crop": {
-                "x": "X coordinate of crop region (default: 0)",
-                "y": "Y coordinate of crop region (default: 0)",
-                "width": "Width of crop region (default: remaining width)",
-                "height": "Height of crop region (default: remaining height)"
-            },
-            "brightness": {"brightness": "Brightness adjustment (-100 to 100, default: 0)"},
-            "contrast": {"contrast": "Contrast adjustment (-100 to 100, default: 0)"},
-            "hue": {"hue": "Hue adjustment in degrees (default: 0)"},
-            "saturation": {"saturation": "Saturation adjustment (-100 to 100, default: 0)"},
-            "gamma": {"gamma": "Gamma correction value (0.1 to 3.0, default: 1.0)"},
-            "histogram-eq": {},
-            "morphology": {
-                "operation": "Morphological operation: 'open', 'close', 'erode', 'dilate' (default: 'open')",
-                "kernel_size": "Kernel size (default: 5)"
-            },
-            "contours": {"min_area": "Minimum contour area (default: 100)"},
-            "corners": {
-                "max_corners": "Maximum number of corners (default: 100)",
-                "quality": "Corner quality threshold (default: 0.01)",
-                "min_distance": "Minimum distance between corners (default: 10)"
-            },
-            "optical-flow": {}
-        }
-        
-        return params.get(name, {})
     
     def on_function_double_clicked(self, item: QTreeWidgetItem, column: int):
         """Handle double-click on function"""
@@ -263,6 +195,5 @@ class FunctionBrowser(QWidget):
         func_def = item.data(0, Qt.ItemDataRole.UserRole)
         
         if func_def:
-            # Get parameters for this function
-            params = self.get_function_parameters(func_def.name)
+            params = func_def.parameters if hasattr(func_def, 'parameters') else {}
             self.function_selected.emit(func_def.name, params)

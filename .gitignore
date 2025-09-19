@@ -138,3 +138,6 @@ output/
 screenshots/
 temp/
 node_modules/
+
+# Frontend build artifacts
+docs/main.js
