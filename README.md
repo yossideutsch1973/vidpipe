@@ -65,8 +65,17 @@ Multi-pipeline file syntax and orchestration notes live in [`docs/language_refer
 Run the automated test suite with:
 
 ```bash
-pytest
+make test
 ```
 
-Generated assets (`node_modules/` and `docs/main.js`) are ignored from version control; rebuild them locally with `npm run build`
-when you need to refresh the static site bundle.
+The helper target ensures `pytest` starts without auto-loading the optional
+`pytest-qt` plugin, which requires system OpenGL libraries that are usually
+missing on headless CI machines.  If you prefer to run the command manually,
+export `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` first.
+
+Generated assets (`node_modules/` and `docs/main.js`) are ignored from version
+control; rebuild them locally with `npm run build` when you need to refresh the
+static site bundle.
+
+For a high-level review of the repository and a list of suggested next steps,
+see [`docs/project_status.md`](docs/project_status.md).
