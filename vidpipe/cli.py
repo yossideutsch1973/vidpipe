@@ -48,8 +48,7 @@ def run_cli(args):
         if args.tokens:
             print("Tokens:")
             for token in tokens:
-                if token.type.name != "EOF":
-                    print(f"  {token.type.name}: {token.value}")
+                print(f"  {token}")
             return 0
         
         # Parse
@@ -58,10 +57,7 @@ def run_cli(args):
         
         if args.ast:
             print("AST:")
-            print(f"  Main pipeline: {ast.main_pipeline}")
-            print(f"  Definitions: {len(ast.definitions)}")
-            for definition in ast.definitions:
-                print(f"    {definition.name}: {definition.expression}")
+            print(f"  {ast}")
             return 0
         
         # Execute

@@ -28,7 +28,9 @@ jobs:
     
     - name: Update requirements
       run: |
-        pip-compile --upgrade requirements.in || echo "No requirements.in found, using requirements.txt as is"
+        # Create a backup and try to update dependencies
+        cp requirements.txt requirements.txt.bak
+        pip-compile --upgrade requirements.txt || echo "pip-compile failed, keeping original requirements"
     
     - name: Test updated dependencies
       run: |

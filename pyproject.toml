@@ -59,7 +59,7 @@ vidpipe = "vidpipe.cli:main"
 vidpipe-gui = "vidpipe.gui_main:main"
 
 [tool.setuptools]
-packages = ["vidpipe", "vidpipe.gui"]
+packages = ["vidpipe"]
 
 [tool.setuptools_scm]
 write_to = "vidpipe/_version.py"
