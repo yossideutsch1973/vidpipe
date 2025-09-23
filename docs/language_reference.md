@@ -64,9 +64,14 @@ and their notable parameters.
 | `camera` | Alias of `webcam`. | `device` — Device index (default `0`). |
 | `capture` | Read frames from a video file. | `filename` — Path to video source. |
 | `test-pattern` | Generate synthetic test images. | `width`, `height`, `pattern` (`checkerboard`, `gradient`, ...). |
+| `solid-color` | Generate solid color frames. | `width`, `height`, `color` — [B,G,R] color values. |
+| `random-noise` | Generate random noise frames. | `width`, `height`, `noise_type` (`uniform`, `gaussian`). |
+| `image-loader` | Load static image as continuous frames. | `filename` — Image file path. |
+| `mandelbrot` | Generate Mandelbrot fractal. | `width`, `height`, `zoom`, `center_x`, `center_y`. |
 
 ### Processors
 
+**Basic Image Processing:**
 | Name | Description | Parameters |
 | --- | --- | --- |
 | `grayscale` / `gray` | Convert to grayscale. | — |
@@ -88,6 +93,131 @@ and their notable parameters.
 | `corners` | Harris corner detection. | `max_corners`, `quality`, `min_distance`. |
 | `optical-flow` | Dense optical flow visualisation. | — |
 
+**Advanced Filters:**
+| Name | Description | Parameters |
+| --- | --- | --- |
+| `sharpen` | Apply sharpening filter. | — |
+| `emboss` | Apply emboss effect. | — |
+| `median` | Apply median filter. | `kernel_size`. |
+| `bilateral` | Apply bilateral filter. | `d`, `sigma_color`, `sigma_space`. |
+| `gaussian` | Apply Gaussian filter. | `kernel_size`, `sigma_x`, `sigma_y`. |
+| `laplacian` | Apply Laplacian edge detection. | — |
+| `sobel-x` / `sobel-y` | Apply Sobel gradient filters. | — |
+| `scharr-x` / `scharr-y` | Apply Scharr gradient filters. | — |
+
+**Color Space Conversions:**
+| Name | Description | Parameters |
+| --- | --- | --- |
+| `bgr2rgb` / `rgb2bgr` | Convert between BGR and RGB. | — |
+| `bgr2hsv` / `hsv2bgr` | Convert between BGR and HSV. | — |
+| `bgr2lab` / `lab2bgr` | Convert between BGR and LAB. | — |
+| `bgr2yuv` / `yuv2bgr` | Convert between BGR and YUV. | — |
+
+**Geometric Transformations:**
+| Name | Description | Parameters |
+| --- | --- | --- |
+| `translate` | Translate (move) image. | `x`, `y`. |
+| `scale` | Scale image. | `scale_x`, `scale_y`. |
+| `shear` | Apply shear transformation. | `shear_x`, `shear_y`. |
+| `perspective` | Apply perspective transformation. | `matrix`. |
+| `affine` | Apply affine transformation. | `matrix`. |
+
+**Mathematical Operations:**
+| Name | Description | Parameters |
+| --- | --- | --- |
+| `add` / `subtract` | Add/subtract constant values. | `value`. |
+| `multiply` / `divide` | Multiply/divide by constant. | `value`. |
+| `abs` / `square` / `sqrt` | Mathematical operations. | — |
+| `log` / `exp` / `power` | Logarithmic and exponential operations. | `power` (for power function). |
+
+**Statistical Filters:**
+| Name | Description | Parameters |
+| --- | --- | --- |
+| `mean` / `min` / `max` | Statistical filters. | `kernel_size`. |
+| `variance` / `std` | Calculate local variance/standard deviation. | `kernel_size`. |
+
+**Noise and Distortion:**
+| Name | Description | Parameters |
+| --- | --- | --- |
+| `gaussian-noise` | Add Gaussian noise. | `mean`, `std`. |
+| `salt-pepper` | Add salt and pepper noise. | `amount`. |
+| `speckle` | Add speckle noise. | `variance`. |
+
+**Feature Detection:**
+| Name | Description | Parameters |
+| --- | --- | --- |
+| `hough-lines` | Detect lines using Hough transform. | `rho`, `theta`, `threshold`. |
+| `hough-circles` | Detect circles using Hough transform. | `dp`, `min_dist`, `param1`, `param2`. |
+| `sift` / `surf` / `orb` | Feature detection algorithms. | — |
+| `fast` | FAST corner detection. | `threshold`. |
+| `brief` | BRIEF feature description. | — |
+
+**Special Effects:**
+| Name | Description | Parameters |
+| --- | --- | --- |
+| `invert` | Invert colors. | — |
+| `sepia` | Apply sepia tone effect. | — |
+| `black-white` | Convert to black and white. | `threshold`. |
+| `vintage` | Apply vintage effect. | — |
+| `cartoon` | Apply cartoon effect. | — |
+| `sketch` | Convert to pencil sketch. | — |
+| `thermal` | Apply thermal vision effect. | — |
+| `night-vision` | Apply night vision effect. | — |
+| `x-ray` | Apply X-ray effect. | — |
+| `polaroid` | Apply Polaroid effect. | — |
+| `cross-process` | Apply cross-processing effect. | — |
+| `lomo` | Apply lomography effect. | — |
+| `vignette` | Apply vignette effect. | `strength`. |
+| `fisheye` | Apply fisheye distortion. | — |
+| `barrel` | Apply barrel distortion. | `strength`. |
+| `pinch` | Apply pinch distortion. | `strength`. |
+| `swirl` | Apply swirl distortion. | `angle`. |
+| `mirror-horizontal` / `mirror-vertical` | Mirror effects. | — |
+| `kaleidoscope` | Apply kaleidoscope effect. | `segments`. |
+| `pixelate` | Apply pixelation effect. | `block_size`. |
+| `mosaic` | Apply mosaic effect. | `tile_size`. |
+| `oil-painting` | Apply oil painting effect. | — |
+| `watercolor` | Apply watercolor effect. | — |
+| `posterize` | Apply posterization. | `levels`. |
+| `solarize` | Apply solarization effect. | `threshold`. |
+
+**Color Grading:**
+| Name | Description | Parameters |
+| --- | --- | --- |
+| `duotone` | Apply duotone effect. | `color1`, `color2`. |
+| `tritone` | Apply tritone effect. | `color1`, `color2`, `color3`. |
+| `color-replace` | Replace specific color. | `target_color`, `replacement_color`, `tolerance`. |
+| `color-enhance` | Enhance specific color. | `target_color`, `enhancement`. |
+| `white-balance` | Auto white balance correction. | — |
+| `exposure` | Adjust exposure. | `stops`. |
+| `shadows-highlights` | Adjust shadows and highlights. | `shadows`, `highlights`. |
+| `vibrance` | Adjust vibrance. | `vibrance`. |
+| `clarity` | Adjust clarity/structure. | `amount`. |
+| `dehaze` | Remove atmospheric haze. | — |
+
+**Advanced Effects:**
+| Name | Description | Parameters |
+| --- | --- | --- |
+| `denoise` | Reduce noise. | `strength`. |
+| `unsharp-mask` | Apply unsharp mask sharpening. | `amount`, `radius`, `threshold`. |
+| `tilt-shift` | Apply tilt-shift effect. | `focus_y`. |
+| `depth-of-field` | Simulate depth of field. | `focus_distance`, `blur_amount`. |
+| `motion-blur` | Apply motion blur. | `angle`, `distance`. |
+| `radial-blur` | Apply radial blur. | `center_x`, `center_y`, `amount`. |
+| `zoom-blur` | Apply zoom blur. | `amount`. |
+| `chromatic-aberration` | Add chromatic aberration. | `strength`. |
+| `lens-distortion` | Apply lens distortion. | `amount`. |
+| `film-grain` | Add film grain. | `intensity`. |
+| `color-grading` | Apply color grading. | `shadows`, `midtones`, `highlights`. |
+
+**Segmentation:**
+| Name | Description | Parameters |
+| --- | --- | --- |
+| `watershed` | Watershed segmentation. | — |
+| `kmeans` | K-means clustering segmentation. | `k`. |
+| `region-growing` | Region growing segmentation. | `threshold`. |
+| `template-match` | Template matching. | `template`, `method`. |
+
 ### Sinks
 
 | Name | Description | Parameters |
@@ -95,5 +225,10 @@ and their notable parameters.
 | `display` / `window` | Show frames in an OpenCV window. | `window_name`. |
 | `save` | Save frames as images. | `filename` with optional `{timestamp}` placeholder. |
 | `record` | Write frames to a video file. | `filename`, `fps`. |
+| `csv-export` | Export frame statistics to CSV. | `filename` — CSV output file. |
+| `json-export` | Export frame metadata to JSON. | `filename` — JSON output file. |
+| `histogram-sink` | Display live histogram. | `window_name` — Histogram window name. |
 
 Refer to the implementation in `vidpipe/functions.py` for the definitive source of function behaviour and metadata.
+
+**Total Functions: 133** (8 sources, 118 processors, 7 sinks)
