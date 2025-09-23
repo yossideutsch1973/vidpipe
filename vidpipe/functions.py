@@ -2780,47 +2780,1140 @@ def vintage_filter(frame: Frame, **kwargs) -> Frame:
     )
 
 
-# Additional stub functions (implementations can be expanded as needed)
-def cartoon_filter(frame: Frame, **kwargs) -> Frame: return frame
-def sketch_filter(frame: Frame, **kwargs) -> Frame: return frame  
-def thermal_filter(frame: Frame, **kwargs) -> Frame: return frame
-def night_vision_filter(frame: Frame, **kwargs) -> Frame: return frame
-def xray_filter(frame: Frame, **kwargs) -> Frame: return frame
-def polaroid_filter(frame: Frame, **kwargs) -> Frame: return frame
-def cross_process_filter(frame: Frame, **kwargs) -> Frame: return frame
-def lomo_filter(frame: Frame, **kwargs) -> Frame: return frame
-def vignette_filter(frame: Frame, strength: float = 0.5, **kwargs) -> Frame: return frame
-def fisheye_filter(frame: Frame, **kwargs) -> Frame: return frame
-def barrel_filter(frame: Frame, strength: float = 0.1, **kwargs) -> Frame: return frame
-def pinch_filter(frame: Frame, strength: float = 0.5, **kwargs) -> Frame: return frame
-def swirl_filter(frame: Frame, angle: float = 45, **kwargs) -> Frame: return frame
-def mirror_h_filter(frame: Frame, **kwargs) -> Frame: return frame
-def mirror_v_filter(frame: Frame, **kwargs) -> Frame: return frame
-def kaleidoscope_filter(frame: Frame, segments: int = 6, **kwargs) -> Frame: return frame
-def pixelate_filter(frame: Frame, block_size: int = 10, **kwargs) -> Frame: return frame
-def mosaic_filter(frame: Frame, tile_size: int = 20, **kwargs) -> Frame: return frame
-def oil_painting_filter(frame: Frame, **kwargs) -> Frame: return frame
-def watercolor_filter(frame: Frame, **kwargs) -> Frame: return frame
-def posterize_filter(frame: Frame, levels: int = 4, **kwargs) -> Frame: return frame
-def solarize_filter(frame: Frame, threshold: int = 128, **kwargs) -> Frame: return frame
-def duotone_filter(frame: Frame, color1: list = None, color2: list = None, **kwargs) -> Frame: return frame
-def tritone_filter(frame: Frame, color1: list = None, color2: list = None, color3: list = None, **kwargs) -> Frame: return frame
-def color_replace_filter(frame: Frame, target_color: list = None, replacement_color: list = None, tolerance: int = 50, **kwargs) -> Frame: return frame
-def color_enhance_filter(frame: Frame, target_color: list = None, enhancement: float = 1.5, **kwargs) -> Frame: return frame
-def white_balance_filter(frame: Frame, **kwargs) -> Frame: return frame
-def exposure_filter(frame: Frame, stops: float = 0, **kwargs) -> Frame: return frame
-def shadows_highlights_filter(frame: Frame, shadows: int = 0, highlights: int = 0, **kwargs) -> Frame: return frame
-def vibrance_filter(frame: Frame, vibrance: int = 0, **kwargs) -> Frame: return frame
-def clarity_filter(frame: Frame, amount: float = 0.5, **kwargs) -> Frame: return frame
-def dehaze_filter(frame: Frame, **kwargs) -> Frame: return frame
-def denoise_filter(frame: Frame, strength: float = 10, **kwargs) -> Frame: return frame
-def unsharp_mask_filter(frame: Frame, amount: float = 1.0, radius: float = 1.0, threshold: int = 0, **kwargs) -> Frame: return frame
-def tilt_shift_filter(frame: Frame, focus_y: float = 0.5, **kwargs) -> Frame: return frame
-def depth_of_field_filter(frame: Frame, focus_distance: float = 0.5, blur_amount: int = 5, **kwargs) -> Frame: return frame
-def motion_blur_filter(frame: Frame, angle: float = 0, distance: int = 15, **kwargs) -> Frame: return frame
-def radial_blur_filter(frame: Frame, center_x: float = 0.5, center_y: float = 0.5, amount: int = 10, **kwargs) -> Frame: return frame
-def zoom_blur_filter(frame: Frame, amount: int = 10, **kwargs) -> Frame: return frame
-def chromatic_aberration_filter(frame: Frame, strength: int = 2, **kwargs) -> Frame: return frame
-def lens_distortion_filter(frame: Frame, amount: float = 0.1, **kwargs) -> Frame: return frame
-def film_grain_filter(frame: Frame, intensity: float = 0.1, **kwargs) -> Frame: return frame
-def color_grading_filter(frame: Frame, shadows: list = None, midtones: list = None, highlights: list = None, **kwargs) -> Frame: return frame
+# Full implementations of advanced effects and filters
+def cartoon_filter(frame: Frame, **kwargs) -> Frame:
+    """Apply cartoon effect"""
+    _require_cv2()
+    
+    # Bilateral filter to reduce noise while keeping edges sharp
+    bilateral = cv2.bilateralFilter(frame.data, 15, 70, 70)
+    
+    # Create edge mask
+    gray = cv2.cvtColor(bilateral, cv2.COLOR_BGR2GRAY)
+    gray_blur = cv2.medianBlur(gray, 5)
+    edges = cv2.adaptiveThreshold(gray_blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 9)
+    
+    # Convert edges to 3-channel
+    edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+    
+    # Combine bilateral filter result with edges
+    cartoon_data = cv2.bitwise_and(bilateral, edges)
+    
+    return Frame(
+        data=cartoon_data,
+        format=FrameFormat.BGR,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def sketch_filter(frame: Frame, **kwargs) -> Frame:
+    """Convert to pencil sketch"""
+    _require_cv2()
+    
+    # Convert to grayscale
+    gray = cv2.cvtColor(frame.data, cv2.COLOR_BGR2GRAY)
+    
+    # Invert the image
+    gray_inv = 255 - gray
+    
+    # Apply Gaussian blur
+    gray_inv_blur = cv2.GaussianBlur(gray_inv, (21, 21), 0)
+    
+    # Create sketch by dividing
+    sketch_data = cv2.divide(gray, 255 - gray_inv_blur, scale=256)
+    
+    return Frame(
+        data=sketch_data,
+        format=FrameFormat.GRAY,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def thermal_filter(frame: Frame, **kwargs) -> Frame:
+    """Apply thermal vision effect"""
+    _require_cv2()
+    
+    # Convert to grayscale
+    if frame.format != FrameFormat.GRAY:
+        gray_data = cv2.cvtColor(frame.data, cv2.COLOR_BGR2GRAY)
+    else:
+        gray_data = frame.data
+    
+    # Apply thermal colormap
+    thermal_data = cv2.applyColorMap(gray_data, cv2.COLORMAP_JET)
+    
+    return Frame(
+        data=thermal_data,
+        format=FrameFormat.BGR,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def night_vision_filter(frame: Frame, **kwargs) -> Frame:
+    """Apply night vision effect"""
+    _require_cv2()
+    
+    # Convert to grayscale
+    if frame.format != FrameFormat.GRAY:
+        gray_data = cv2.cvtColor(frame.data, cv2.COLOR_BGR2GRAY)
+    else:
+        gray_data = frame.data
+    
+    # Enhance contrast
+    enhanced = cv2.equalizeHist(gray_data)
+    
+    # Create green night vision effect
+    night_data = np.zeros((frame.height, frame.width, 3), dtype=np.uint8)
+    night_data[:, :, 1] = enhanced  # Green channel only
+    
+    return Frame(
+        data=night_data,
+        format=FrameFormat.BGR,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def xray_filter(frame: Frame, **kwargs) -> Frame:
+    """Apply X-ray effect"""
+    # Invert colors and convert to grayscale
+    inverted = 255 - frame.data
+    
+    if frame.format != FrameFormat.GRAY:
+        xray_data = cv2.cvtColor(inverted, cv2.COLOR_BGR2GRAY)
+    else:
+        xray_data = inverted
+    
+    return Frame(
+        data=xray_data,
+        format=FrameFormat.GRAY,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def polaroid_filter(frame: Frame, **kwargs) -> Frame:
+    """Apply Polaroid effect"""
+    _require_cv2()
+    
+    # Increase saturation and add warm tone
+    hsv_data = cv2.cvtColor(frame.data, cv2.COLOR_BGR2HSV)
+    hsv_data[:, :, 1] = np.clip(hsv_data[:, :, 1] * 1.3, 0, 255)  # Increase saturation
+    
+    # Convert back to BGR
+    saturated = cv2.cvtColor(hsv_data, cv2.COLOR_HSV2BGR)
+    
+    # Add warm tone (increase red, slightly reduce blue)
+    polaroid_data = saturated.astype(np.float32)
+    polaroid_data[:, :, 2] = np.clip(polaroid_data[:, :, 2] * 1.1, 0, 255)  # Increase red
+    polaroid_data[:, :, 0] = np.clip(polaroid_data[:, :, 0] * 0.9, 0, 255)  # Reduce blue
+    polaroid_data = polaroid_data.astype(np.uint8)
+    
+    return Frame(
+        data=polaroid_data,
+        format=FrameFormat.BGR,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def cross_process_filter(frame: Frame, **kwargs) -> Frame:
+    """Apply cross-processing effect"""
+    _require_cv2()
+    
+    # Create lookup table for cross-processing curve
+    lut = np.zeros(256, dtype=np.uint8)
+    for i in range(256):
+        lut[i] = np.clip(128 + (i - 128) * 1.2, 0, 255)
+    
+    # Apply to each channel differently
+    cross_data = frame.data.copy()
+    cross_data[:, :, 0] = cv2.LUT(cross_data[:, :, 0], lut)  # Blue
+    cross_data[:, :, 1] = cross_data[:, :, 1]  # Green unchanged
+    cross_data[:, :, 2] = 255 - cv2.LUT(255 - cross_data[:, :, 2], lut)  # Red inverted curve
+    
+    return Frame(
+        data=cross_data,
+        format=FrameFormat.BGR,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def lomo_filter(frame: Frame, **kwargs) -> Frame:
+    """Apply lomography effect"""
+    _require_cv2()
+    
+    # Add vignette effect
+    vignette_frame = vignette_filter(frame, strength=0.7)
+    
+    # Increase contrast and saturation
+    hsv_data = cv2.cvtColor(vignette_frame.data, cv2.COLOR_BGR2HSV)
+    hsv_data[:, :, 1] = np.clip(hsv_data[:, :, 1] * 1.4, 0, 255)  # Increase saturation
+    hsv_data[:, :, 2] = np.clip(hsv_data[:, :, 2] * 1.1, 0, 255)  # Increase value
+    
+    lomo_data = cv2.cvtColor(hsv_data, cv2.COLOR_HSV2BGR)
+    
+    return Frame(
+        data=lomo_data,
+        format=FrameFormat.BGR,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def vignette_filter(frame: Frame, strength: float = 0.5, **kwargs) -> Frame:
+    """Apply vignette effect"""
+    rows, cols = frame.height, frame.width
+    
+    # Create vignette mask
+    X_resultant_kernel = cv2.getGaussianKernel(cols, cols / 3)
+    Y_resultant_kernel = cv2.getGaussianKernel(rows, rows / 3)
+    
+    resultant_kernel = Y_resultant_kernel * X_resultant_kernel.T
+    mask = resultant_kernel / resultant_kernel.max()
+    
+    # Apply strength
+    mask = mask * strength + (1 - strength)
+    
+    # Apply vignette
+    vignette_data = frame.data.copy().astype(np.float32)
+    for i in range(frame.channels):
+        vignette_data[:, :, i] = vignette_data[:, :, i] * mask
+    
+    vignette_data = np.clip(vignette_data, 0, 255).astype(np.uint8)
+    
+    return Frame(
+        data=vignette_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def fisheye_filter(frame: Frame, **kwargs) -> Frame:
+    """Apply fisheye distortion"""
+    _require_cv2()
+    
+    rows, cols = frame.height, frame.width
+    map_x = np.zeros((rows, cols), dtype=np.float32)
+    map_y = np.zeros((rows, cols), dtype=np.float32)
+    
+    for i in range(rows):
+        for j in range(cols):
+            x = (j - cols / 2) / (cols / 2)
+            y = (i - rows / 2) / (rows / 2)
+            
+            r = np.sqrt(x*x + y*y)
+            if r == 0:
+                map_x[i, j] = j
+                map_y[i, j] = i
+            else:
+                theta = np.arctan2(y, x)
+                r_new = r * r
+                
+                x_new = r_new * np.cos(theta)
+                y_new = r_new * np.sin(theta)
+                
+                map_x[i, j] = (x_new * cols / 2) + cols / 2
+                map_y[i, j] = (y_new * rows / 2) + rows / 2
+    
+    fisheye_data = cv2.remap(frame.data, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+    
+    return Frame(
+        data=fisheye_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def barrel_filter(frame: Frame, strength: float = 0.1, **kwargs) -> Frame:
+    """Apply barrel distortion"""
+    _require_cv2()
+    
+    rows, cols = frame.height, frame.width
+    map_x = np.zeros((rows, cols), dtype=np.float32)
+    map_y = np.zeros((rows, cols), dtype=np.float32)
+    
+    for i in range(rows):
+        for j in range(cols):
+            x = (j - cols / 2) / (cols / 2)
+            y = (i - rows / 2) / (rows / 2)
+            
+            r = np.sqrt(x*x + y*y)
+            r_new = r * (1 + strength * r * r)
+            
+            if r == 0:
+                map_x[i, j] = j
+                map_y[i, j] = i
+            else:
+                map_x[i, j] = (x * r_new / r * cols / 2) + cols / 2
+                map_y[i, j] = (y * r_new / r * rows / 2) + rows / 2
+    
+    barrel_data = cv2.remap(frame.data, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+    
+    return Frame(
+        data=barrel_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def pinch_filter(frame: Frame, strength: float = 0.5, **kwargs) -> Frame:
+    """Apply pinch distortion"""
+    _require_cv2()
+    
+    rows, cols = frame.height, frame.width
+    map_x = np.zeros((rows, cols), dtype=np.float32)
+    map_y = np.zeros((rows, cols), dtype=np.float32)
+    
+    for i in range(rows):
+        for j in range(cols):
+            x = (j - cols / 2) / (cols / 2)
+            y = (i - rows / 2) / (rows / 2)
+            
+            r = np.sqrt(x*x + y*y)
+            r_new = r * (1 - strength * (1 - r))
+            
+            if r == 0:
+                map_x[i, j] = j
+                map_y[i, j] = i
+            else:
+                map_x[i, j] = (x * r_new / r * cols / 2) + cols / 2
+                map_y[i, j] = (y * r_new / r * rows / 2) + rows / 2
+    
+    pinch_data = cv2.remap(frame.data, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+    
+    return Frame(
+        data=pinch_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def swirl_filter(frame: Frame, angle: float = 45, **kwargs) -> Frame:
+    """Apply swirl distortion"""
+    _require_cv2()
+    
+    rows, cols = frame.height, frame.width
+    map_x = np.zeros((rows, cols), dtype=np.float32)
+    map_y = np.zeros((rows, cols), dtype=np.float32)
+    
+    angle_rad = np.radians(angle)
+    
+    for i in range(rows):
+        for j in range(cols):
+            x = (j - cols / 2) / (cols / 2)
+            y = (i - rows / 2) / (rows / 2)
+            
+            r = np.sqrt(x*x + y*y)
+            theta = np.arctan2(y, x) + angle_rad * (1 - r)
+            
+            x_new = r * np.cos(theta)
+            y_new = r * np.sin(theta)
+            
+            map_x[i, j] = (x_new * cols / 2) + cols / 2
+            map_y[i, j] = (y_new * rows / 2) + rows / 2
+    
+    swirl_data = cv2.remap(frame.data, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+    
+    return Frame(
+        data=swirl_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def mirror_h_filter(frame: Frame, **kwargs) -> Frame:
+    """Mirror horizontally"""
+    mirrored_data = np.concatenate([frame.data, frame.data[:, ::-1]], axis=1)
+    
+    return Frame(
+        data=mirrored_data,
+        format=frame.format,
+        width=frame.width * 2,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def mirror_v_filter(frame: Frame, **kwargs) -> Frame:
+    """Mirror vertically"""
+    mirrored_data = np.concatenate([frame.data, frame.data[::-1, :]], axis=0)
+    
+    return Frame(
+        data=mirrored_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height * 2,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def kaleidoscope_filter(frame: Frame, segments: int = 6, **kwargs) -> Frame:
+    """Apply kaleidoscope effect"""
+    _require_cv2()
+    
+    rows, cols = frame.height, frame.width
+    center_x, center_y = cols // 2, rows // 2
+    radius = min(center_x, center_y)
+    
+    kaleidoscope_data = np.zeros_like(frame.data)
+    
+    for i in range(segments):
+        angle = 2 * np.pi * i / segments
+        M = cv2.getRotationMatrix2D((center_x, center_y), np.degrees(angle), 1)
+        rotated = cv2.warpAffine(frame.data, M, (cols, rows))
+        
+        mask = np.zeros((rows, cols), dtype=np.uint8)
+        points = np.array([[center_x, center_y],
+                          [center_x + radius * np.cos(angle), center_y + radius * np.sin(angle)],
+                          [center_x + radius * np.cos(angle + 2*np.pi/segments), 
+                           center_y + radius * np.sin(angle + 2*np.pi/segments)]], np.int32)
+        cv2.fillPoly(mask, [points], 255)
+        
+        kaleidoscope_data = np.where(mask[..., None], rotated, kaleidoscope_data)
+    
+    return Frame(
+        data=kaleidoscope_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def pixelate_filter(frame: Frame, block_size: int = 10, **kwargs) -> Frame:
+    """Apply pixelation effect"""
+    _require_cv2()
+    
+    height, width = frame.height // block_size, frame.width // block_size
+    small = cv2.resize(frame.data, (width, height), interpolation=cv2.INTER_LINEAR)
+    pixelated_data = cv2.resize(small, (frame.width, frame.height), interpolation=cv2.INTER_NEAREST)
+    
+    return Frame(
+        data=pixelated_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def mosaic_filter(frame: Frame, tile_size: int = 20, **kwargs) -> Frame:
+    """Apply mosaic effect"""
+    mosaic_data = frame.data.copy()
+    
+    for y in range(0, frame.height, tile_size):
+        for x in range(0, frame.width, tile_size):
+            y_end = min(y + tile_size, frame.height)
+            x_end = min(x + tile_size, frame.width)
+            
+            tile = frame.data[y:y_end, x:x_end]
+            avg_color = np.mean(tile, axis=(0, 1))
+            
+            mosaic_data[y:y_end, x:x_end] = avg_color
+    
+    return Frame(
+        data=mosaic_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def oil_painting_filter(frame: Frame, **kwargs) -> Frame:
+    """Apply oil painting effect"""
+    _require_cv2()
+    
+    try:
+        oil_data = cv2.xphoto.oilPainting(frame.data, 7, 1)
+    except (AttributeError, cv2.error):
+        # If xphoto not available, use alternative method
+        oil_data = cv2.bilateralFilter(frame.data, 20, 80, 80)
+        oil_data = cv2.bilateralFilter(oil_data, 20, 80, 80)
+    
+    return Frame(
+        data=oil_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def watercolor_filter(frame: Frame, **kwargs) -> Frame:
+    """Apply watercolor effect"""
+    _require_cv2()
+    
+    smooth = cv2.bilateralFilter(frame.data, 15, 80, 80)
+    gray = cv2.cvtColor(smooth, cv2.COLOR_BGR2GRAY)
+    edges = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 10)
+    edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+    watercolor_data = cv2.bitwise_and(smooth, edges)
+    
+    return Frame(
+        data=watercolor_data,
+        format=FrameFormat.BGR,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def posterize_filter(frame: Frame, levels: int = 4, **kwargs) -> Frame:
+    """Apply posterization"""
+    factor = 256 // levels
+    posterized_data = (frame.data // factor) * factor
+    
+    return Frame(
+        data=posterized_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def solarize_filter(frame: Frame, threshold: int = 128, **kwargs) -> Frame:
+    """Apply solarization effect"""
+    solarized_data = frame.data.copy()
+    solarized_data[solarized_data >= threshold] = 255 - solarized_data[solarized_data >= threshold]
+    
+    return Frame(
+        data=solarized_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def duotone_filter(frame: Frame, color1: list = None, color2: list = None, **kwargs) -> Frame:
+    """Apply duotone effect"""
+    _require_cv2()
+    
+    if color1 is None:
+        color1 = [0, 0, 255]  # Red
+    if color2 is None:
+        color2 = [255, 255, 0]  # Cyan
+    
+    # Convert to grayscale
+    if frame.format != FrameFormat.GRAY:
+        gray_data = cv2.cvtColor(frame.data, cv2.COLOR_BGR2GRAY)
+    else:
+        gray_data = frame.data
+    
+    # Create duotone
+    duotone_data = np.zeros((frame.height, frame.width, 3), dtype=np.uint8)
+    
+    for i in range(3):
+        duotone_data[:, :, i] = np.interp(gray_data, [0, 255], [color1[i], color2[i]])
+    
+    return Frame(
+        data=duotone_data,
+        format=FrameFormat.BGR,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def tritone_filter(frame: Frame, color1: list = None, color2: list = None, color3: list = None, **kwargs) -> Frame:
+    """Apply tritone effect"""
+    _require_cv2()
+    
+    if color1 is None:
+        color1 = [0, 0, 255]  # Red
+    if color2 is None:
+        color2 = [0, 255, 0]  # Green
+    if color3 is None:
+        color3 = [255, 0, 0]  # Blue
+    
+    # Convert to grayscale
+    if frame.format != FrameFormat.GRAY:
+        gray_data = cv2.cvtColor(frame.data, cv2.COLOR_BGR2GRAY)
+    else:
+        gray_data = frame.data
+    
+    # Create tritone
+    tritone_data = np.zeros((frame.height, frame.width, 3), dtype=np.uint8)
+    
+    for i in range(3):
+        tritone_data[:, :, i] = np.interp(gray_data, [0, 128, 255], [color1[i], color2[i], color3[i]])
+    
+    return Frame(
+        data=tritone_data,
+        format=FrameFormat.BGR,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def color_replace_filter(frame: Frame, target_color: list = None, replacement_color: list = None, tolerance: int = 50, **kwargs) -> Frame:
+    """Replace specific color"""
+    if target_color is None or replacement_color is None:
+        return frame
+    
+    # Calculate color distance
+    target = np.array(target_color)
+    diff = np.abs(frame.data.astype(np.int16) - target)
+    distance = np.sqrt(np.sum(diff**2, axis=2))
+    
+    # Create mask for colors within tolerance
+    mask = distance <= tolerance
+    
+    # Replace colors
+    result_data = frame.data.copy()
+    result_data[mask] = replacement_color
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def color_enhance_filter(frame: Frame, target_color: list = None, enhancement: float = 1.5, **kwargs) -> Frame:
+    """Enhance specific color"""
+    if target_color is None:
+        return frame
+    
+    # Calculate color distance
+    target = np.array(target_color)
+    diff = np.abs(frame.data.astype(np.int16) - target)
+    distance = np.sqrt(np.sum(diff**2, axis=2))
+    
+    # Create enhancement mask (stronger for closer colors)
+    max_distance = np.sqrt(3 * 255**2)
+    similarity = 1 - (distance / max_distance)
+    enhancement_factor = 1 + (enhancement - 1) * similarity
+    
+    # Apply enhancement
+    result_data = frame.data.astype(np.float32)
+    for i in range(frame.channels):
+        result_data[:, :, i] *= enhancement_factor
+    
+    result_data = np.clip(result_data, 0, 255).astype(np.uint8)
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def white_balance_filter(frame: Frame, **kwargs) -> Frame:
+    """Auto white balance correction"""
+    _require_cv2()
+    
+    if frame.format == FrameFormat.GRAY:
+        return frame
+    
+    # Simple white balance using gray world assumption
+    result_data = frame.data.astype(np.float32)
+    
+    # Calculate average of each channel
+    avg_b = np.mean(result_data[:, :, 0])
+    avg_g = np.mean(result_data[:, :, 1])
+    avg_r = np.mean(result_data[:, :, 2])
+    
+    # Calculate scaling factors
+    gray_world = (avg_b + avg_g + avg_r) / 3
+    scale_b = gray_world / avg_b if avg_b > 0 else 1
+    scale_g = gray_world / avg_g if avg_g > 0 else 1
+    scale_r = gray_world / avg_r if avg_r > 0 else 1
+    
+    # Apply scaling
+    result_data[:, :, 0] *= scale_b
+    result_data[:, :, 1] *= scale_g
+    result_data[:, :, 2] *= scale_r
+    
+    result_data = np.clip(result_data, 0, 255).astype(np.uint8)
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def exposure_filter(frame: Frame, stops: float = 0, **kwargs) -> Frame:
+    """Adjust exposure"""
+    # Convert stops to multiplier (2^stops)
+    multiplier = 2 ** stops
+    
+    exposed_data = np.clip(frame.data.astype(np.float32) * multiplier, 0, 255).astype(np.uint8)
+    
+    return Frame(
+        data=exposed_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def shadows_highlights_filter(frame: Frame, shadows: int = 0, highlights: int = 0, **kwargs) -> Frame:
+    """Adjust shadows and highlights"""
+    # Convert to float for calculations
+    result_data = frame.data.astype(np.float32) / 255.0
+    
+    # Shadow adjustment (affects darker areas more)
+    if shadows != 0:
+        shadow_factor = 1 + shadows / 100.0
+        shadow_mask = 1 - result_data  # Stronger effect on darker pixels
+        result_data += (shadow_factor - 1) * result_data * shadow_mask
+    
+    # Highlight adjustment (affects brighter areas more)
+    if highlights != 0:
+        highlight_factor = 1 + highlights / 100.0
+        highlight_mask = result_data  # Stronger effect on brighter pixels
+        result_data += (highlight_factor - 1) * result_data * highlight_mask
+    
+    result_data = np.clip(result_data * 255, 0, 255).astype(np.uint8)
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def vibrance_filter(frame: Frame, vibrance: int = 0, **kwargs) -> Frame:
+    """Adjust vibrance"""
+    _require_cv2()
+    
+    if frame.format == FrameFormat.GRAY:
+        return frame
+    
+    # Convert to HSV
+    hsv_data = cv2.cvtColor(frame.data, cv2.COLOR_BGR2HSV).astype(np.float32)
+    
+    # Calculate saturation mask (vibrance affects less saturated colors more)
+    saturation = hsv_data[:, :, 1] / 255.0
+    vibrance_mask = 1 - saturation
+    
+    # Apply vibrance adjustment
+    vibrance_factor = 1 + vibrance / 100.0
+    hsv_data[:, :, 1] = np.clip(hsv_data[:, :, 1] * (1 + (vibrance_factor - 1) * vibrance_mask), 0, 255)
+    
+    # Convert back to BGR
+    result_data = cv2.cvtColor(hsv_data.astype(np.uint8), cv2.COLOR_HSV2BGR)
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def clarity_filter(frame: Frame, amount: float = 0.5, **kwargs) -> Frame:
+    """Adjust clarity/structure"""
+    _require_cv2()
+    
+    # Create high-pass filter for clarity
+    blurred = cv2.GaussianBlur(frame.data, (0, 0), 3)
+    high_pass = frame.data.astype(np.float32) - blurred.astype(np.float32)
+    
+    # Apply clarity
+    result_data = frame.data.astype(np.float32) + high_pass * amount
+    result_data = np.clip(result_data, 0, 255).astype(np.uint8)
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def dehaze_filter(frame: Frame, **kwargs) -> Frame:
+    """Remove atmospheric haze"""
+    _require_cv2()
+    
+    # Simple dehaze using contrast stretching
+    result_data = frame.data.copy()
+    
+    for i in range(frame.channels):
+        channel = result_data[:, :, i] if frame.channels > 1 else result_data
+        min_val = np.percentile(channel, 1)
+        max_val = np.percentile(channel, 99)
+        
+        if max_val > min_val:
+            stretched = (channel - min_val) * 255 / (max_val - min_val)
+            stretched = np.clip(stretched, 0, 255)
+            
+            if frame.channels > 1:
+                result_data[:, :, i] = stretched
+            else:
+                result_data = stretched
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def denoise_filter(frame: Frame, strength: float = 10, **kwargs) -> Frame:
+    """Reduce noise"""
+    _require_cv2()
+    
+    if frame.format == FrameFormat.GRAY:
+        denoised_data = cv2.fastNlMeansDenoising(frame.data, None, strength, 7, 21)
+    else:
+        denoised_data = cv2.fastNlMeansDenoisingColored(frame.data, None, strength, strength, 7, 21)
+    
+    return Frame(
+        data=denoised_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def unsharp_mask_filter(frame: Frame, amount: float = 1.0, radius: float = 1.0, threshold: int = 0, **kwargs) -> Frame:
+    """Apply unsharp mask sharpening"""
+    _require_cv2()
+    
+    # Create Gaussian blur
+    blurred = cv2.GaussianBlur(frame.data, (0, 0), radius)
+    
+    # Create unsharp mask
+    mask = frame.data.astype(np.float32) - blurred.astype(np.float32)
+    
+    # Apply threshold
+    if threshold > 0:
+        mask[np.abs(mask) < threshold] = 0
+    
+    # Apply amount
+    result_data = frame.data.astype(np.float32) + mask * amount
+    result_data = np.clip(result_data, 0, 255).astype(np.uint8)
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def tilt_shift_filter(frame: Frame, focus_y: float = 0.5, **kwargs) -> Frame:
+    """Apply tilt-shift effect"""
+    _require_cv2()
+    
+    rows = frame.height
+    focus_line = int(focus_y * rows)
+    
+    # Create mask for focus area
+    y_coords = np.arange(rows)
+    distance_from_focus = np.abs(y_coords - focus_line) / rows
+    blur_amount = np.clip(distance_from_focus * 20, 0, 15)
+    
+    result_data = frame.data.copy()
+    
+    for y in range(rows):
+        if blur_amount[y] > 1:
+            ksize = int(blur_amount[y])
+            if ksize % 2 == 0:
+                ksize += 1
+            result_data[y:y+1, :] = cv2.GaussianBlur(result_data[y:y+1, :], (ksize, ksize), 0)
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def depth_of_field_filter(frame: Frame, focus_distance: float = 0.5, blur_amount: int = 5, **kwargs) -> Frame:
+    """Simulate depth of field"""
+    _require_cv2()
+    
+    # Create radial distance map from center
+    rows, cols = frame.height, frame.width
+    center_y, center_x = rows // 2, cols // 2
+    
+    y, x = np.ogrid[:rows, :cols]
+    distance = np.sqrt((x - center_x)**2 + (y - center_y)**2) / max(rows, cols)
+    
+    # Calculate blur based on distance from focus
+    blur_map = np.abs(distance - focus_distance) * blur_amount * 10
+    blur_map = np.clip(blur_map, 0, 20).astype(int)
+    
+    result_data = frame.data.copy()
+    
+    # Apply variable blur
+    for blur_level in range(1, 21):
+        mask = blur_map == blur_level
+        if np.any(mask):
+            ksize = blur_level
+            if ksize % 2 == 0:
+                ksize += 1
+            blurred = cv2.GaussianBlur(frame.data, (ksize, ksize), 0)
+            result_data = np.where(mask[..., None], blurred, result_data)
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def motion_blur_filter(frame: Frame, angle: float = 0, distance: int = 15, **kwargs) -> Frame:
+    """Apply motion blur"""
+    _require_cv2()
+    
+    # Create motion blur kernel
+    kernel_size = distance
+    kernel = np.zeros((kernel_size, kernel_size))
+    
+    # Calculate kernel line based on angle
+    angle_rad = np.radians(angle)
+    cos_a = np.cos(angle_rad)
+    sin_a = np.sin(angle_rad)
+    
+    for i in range(kernel_size):
+        offset = i - kernel_size // 2
+        x = int(kernel_size // 2 + offset * cos_a)
+        y = int(kernel_size // 2 + offset * sin_a)
+        if 0 <= x < kernel_size and 0 <= y < kernel_size:
+            kernel[y, x] = 1
+    
+    # Normalize kernel
+    kernel = kernel / np.sum(kernel) if np.sum(kernel) > 0 else kernel
+    
+    # Apply motion blur
+    motion_blurred = cv2.filter2D(frame.data, -1, kernel)
+    
+    return Frame(
+        data=motion_blurred,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def radial_blur_filter(frame: Frame, center_x: float = 0.5, center_y: float = 0.5, amount: int = 10, **kwargs) -> Frame:
+    """Apply radial blur"""
+    _require_cv2()
+    
+    rows, cols = frame.height, frame.width
+    center_px = int(center_x * cols)
+    center_py = int(center_y * rows)
+    
+    result_data = frame.data.copy().astype(np.float32)
+    
+    # Apply radial blur by averaging multiple rotated versions
+    for i in range(amount):
+        angle = (i - amount//2) * 2  # Small rotation angles
+        M = cv2.getRotationMatrix2D((center_px, center_py), angle, 1)
+        rotated = cv2.warpAffine(frame.data, M, (cols, rows))
+        result_data += rotated.astype(np.float32)
+    
+    result_data = (result_data / (amount + 1)).astype(np.uint8)
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def zoom_blur_filter(frame: Frame, amount: int = 10, **kwargs) -> Frame:
+    """Apply zoom blur"""
+    _require_cv2()
+    
+    rows, cols = frame.height, frame.width
+    center_x, center_y = cols // 2, rows // 2
+    
+    result_data = frame.data.copy().astype(np.float32)
+    
+    # Apply zoom blur by averaging multiple scaled versions
+    for i in range(amount):
+        scale = 1 + (i * 0.02)  # Small scale increments
+        M = cv2.getRotationMatrix2D((center_x, center_y), 0, scale)
+        scaled = cv2.warpAffine(frame.data, M, (cols, rows))
+        result_data += scaled.astype(np.float32)
+    
+    result_data = (result_data / (amount + 1)).astype(np.uint8)
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def chromatic_aberration_filter(frame: Frame, strength: int = 2, **kwargs) -> Frame:
+    """Add chromatic aberration"""
+    if frame.format == FrameFormat.GRAY:
+        return frame
+    
+    result_data = frame.data.copy()
+    
+    # Shift red and blue channels
+    result_data[:, :-strength, 2] = frame.data[:, strength:, 2]  # Red shift
+    result_data[:, strength:, 0] = frame.data[:, :-strength, 0]  # Blue shift
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def lens_distortion_filter(frame: Frame, amount: float = 0.1, **kwargs) -> Frame:
+    """Apply lens distortion"""
+    return barrel_filter(frame, strength=amount, **kwargs)
+
+
+def film_grain_filter(frame: Frame, intensity: float = 0.1, **kwargs) -> Frame:
+    """Add film grain"""
+    # Generate grain noise
+    grain = np.random.normal(0, intensity * 255, frame.data.shape).astype(np.float32)
+    
+    # Add grain to image
+    grainy_data = np.clip(frame.data.astype(np.float32) + grain, 0, 255).astype(np.uint8)
+    
+    return Frame(
+        data=grainy_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
+
+
+def color_grading_filter(frame: Frame, shadows: list = None, midtones: list = None, highlights: list = None, **kwargs) -> Frame:
+    """Apply color grading"""
+    _require_cv2()
+    
+    if frame.format == FrameFormat.GRAY:
+        return frame
+    
+    # Default color tints
+    if shadows is None:
+        shadows = [0, 0, 0]
+    if midtones is None:
+        midtones = [0, 0, 0]
+    if highlights is None:
+        highlights = [0, 0, 0]
+    
+    # Convert to float for calculations
+    result_data = frame.data.astype(np.float32)
+    
+    # Calculate luminance masks
+    gray = cv2.cvtColor(frame.data, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255.0
+    
+    # Create masks for shadows, midtones, highlights
+    shadow_mask = 1 - np.clip(gray * 2, 0, 1)
+    highlight_mask = np.clip((gray - 0.5) * 2, 0, 1)
+    midtone_mask = 1 - shadow_mask - highlight_mask
+    
+    # Apply color grading
+    for i in range(3):
+        result_data[:, :, i] += shadow_mask * shadows[i]
+        result_data[:, :, i] += midtone_mask * midtones[i]
+        result_data[:, :, i] += highlight_mask * highlights[i]
+    
+    result_data = np.clip(result_data, 0, 255).astype(np.uint8)
+    
+    return Frame(
+        data=result_data,
+        format=frame.format,
+        width=frame.width,
+        height=frame.height,
+        timestamp=frame.timestamp,
+        metadata=frame.metadata.copy()
+    )
