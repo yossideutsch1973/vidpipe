@@ -1,10 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2018",
     "module": "es6",
     "rootDir": "src",
     "outDir": "docs",
     "strict": true,
-    "esModuleInterop": true
-  }
+    "esModuleInterop": true,
+    "lib": ["es2018", "dom", "dom.iterable"],
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "docs"]
 }

@@ -91,12 +91,28 @@ def run_gui():
         return 1
 
 
+def run_web_server():
+    """Run VidPipe web server"""
+    try:
+        import subprocess
+        import sys
+        from pathlib import Path
+        
+        web_server_path = Path(__file__).parent / 'web_server.py'
+        subprocess.run([sys.executable, str(web_server_path)])
+        return 0
+    except Exception as e:
+        print(f"Error starting web server: {e}")
+        return 1
+
+
 def main():
     parser = argparse.ArgumentParser(description='VidPipe - Functional Pipeline Language for Video Processing')
     
     # Mode selection
     mode_group = parser.add_mutually_exclusive_group()
-    mode_group.add_argument('--gui', action='store_true', help='Launch GUI mode')
+    mode_group.add_argument('--gui', action='store_true', help='Launch Qt GUI mode')
+    mode_group.add_argument('--web', action='store_true', help='Launch web server mode')
     mode_group.add_argument('--cli', action='store_true', help='Run in CLI mode (default)')
     
     # CLI options
@@ -111,14 +127,16 @@ def main():
     args = parser.parse_args()
     
     # Default to CLI if no mode specified and code/file/multi provided
-    if not args.gui and not args.cli and (args.code or args.file or args.multi):
+    if not args.gui and not args.web and not args.cli and (args.code or args.file or args.multi):
         args.cli = True
     
     # Default to GUI if no mode specified and no code/file
-    if not args.gui and not args.cli:
+    if not args.gui and not args.web and not args.cli:
         args.gui = True
     
-    if args.gui:
+    if args.web:
+        return run_web_server()
+    elif args.gui:
         return run_gui()
     else:
         return run_cli(args)
