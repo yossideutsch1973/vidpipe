@@ -27,7 +27,27 @@ npm run build  # compiles docs/main.js from src/main.ts
 
 ## Usage
 
-### GUI editor
+### Web Editor (NEW!)
+
+```bash
+python main.py --web
+```
+
+Launches a modern web-based editor that runs in your browser at `http://localhost:8080`. The web editor provides:
+
+- **Real-time pipeline editing** with syntax highlighting
+- **Browser-native video processing** using WebRTC and Canvas APIs
+- **Live validation** and error checking
+- **Interactive examples** and help system
+- **Webcam integration** and test pattern generation
+- **No desktop dependencies** - works on any modern browser
+
+The web editor supports a subset of VidPipe operations optimized for browser execution, including:
+- **Sources**: `webcam`, `test-pattern`
+- **Filters**: `grayscale`, `invert`, `sepia`, `edges`, `blur`
+- **Sinks**: `display` (renders to web canvas)
+
+### Qt GUI editor
 
 ```bash
 python main.py --gui

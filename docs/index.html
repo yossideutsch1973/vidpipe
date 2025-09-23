@@ -2,10 +2,182 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>VidPipe Web Frontend</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VidPipe Web Editor</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+    }
+    .header {
+      background: #2c3e50;
+      color: white;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .container {
+      display: flex;
+      height: calc(100vh - 80px);
+    }
+    .editor-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      margin: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .video-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      margin: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .panel-header {
+      background: #34495e;
+      color: white;
+      padding: 0.75rem 1rem;
+      border-radius: 8px 8px 0 0;
+      font-weight: 500;
+    }
+    .panel-content {
+      flex: 1;
+      padding: 1rem;
+      overflow: auto;
+    }
+    #pipeline-editor {
+      width: 100%;
+      height: 300px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.5rem;
+      resize: vertical;
+    }
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+    }
+    .error {
+      background: #e74c3c;
+    }
+    .success {
+      background: #27ae60;
+    }
+    #video-display {
+      width: 100%;
+      max-height: 400px;
+      background: #000;
+      border-radius: 4px;
+    }
+    .output {
+      background: #2c3e50;
+      color: #ecf0f1;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 0.5rem;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+    .examples {
+      margin-top: 1rem;
+    }
+    .example-btn {
+      background: #95a5a6;
+      font-size: 12px;
+      padding: 0.25rem 0.5rem;
+      margin: 0.25rem;
+    }
+    .example-btn:hover {
+      background: #7f8c8d;
+    }
+    .status {
+      padding: 0.5rem 1rem;
+      background: #ecf0f1;
+      border-top: 1px solid #bdc3c7;
+      font-size: 12px;
+      color: #7f8c8d;
+    }
+  </style>
 </head>
 <body>
-  <div id="app">Loading...</div>
-  <script type="module" src="main.js"></script>
+  <div class="header">
+    <h1>VidPipe Web Editor</h1>
+  </div>
+  
+  <div class="container">
+    <div class="editor-panel">
+      <div class="panel-header">Pipeline Editor</div>
+      <div class="panel-content">
+        <textarea id="pipeline-editor" placeholder="Enter your VidPipe pipeline code here...
+Example:
+webcam -> grayscale -> edges -> display
+
+Use 'help' to see available functions."></textarea>
+        
+        <div class="controls">
+          <button id="run-btn">Run Pipeline</button>
+          <button id="stop-btn" disabled>Stop</button>
+          <button id="validate-btn">Validate</button>
+          <button id="help-btn">Help</button>
+        </div>
+        
+        <div class="examples">
+          <strong>Examples:</strong>
+          <button class="example-btn" data-example="webcam -> grayscale -> edges -> display">Edge Detection</button>
+          <button class="example-btn" data-example="test-pattern -> blur -> display">Test Pattern</button>
+          <button class="example-btn" data-example="webcam -> sepia -> display">Sepia Effect</button>
+          <button class="example-btn" data-example="webcam -> invert -> display">Color Invert</button>
+        </div>
+        
+        <div id="output" class="output"></div>
+      </div>
+      <div class="status" id="status">Ready</div>
+    </div>
+    
+    <div class="video-panel">
+      <div class="panel-header">Video Output</div>
+      <div class="panel-content">
+        <video id="video-display" autoplay muted></video>
+        <canvas id="canvas-display" style="display: none;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="references" style="display: none;">
+    <!-- Original reference content will be loaded here -->
+  </div>
+
+  <script type="module" src="web-editor.js"></script>
 </body>
 </html>
