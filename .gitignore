@@ -141,3 +141,16 @@ node_modules/
 
 # Frontend build artifacts
 docs/main.js
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Coverage reports
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Version file
+vidpipe/_version.py
