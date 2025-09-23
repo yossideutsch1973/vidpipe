@@ -1,0 +1,127 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run weekly on Mondays at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  update-python-deps:
+    name: Update Python Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install pip-tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-tools
+    
+    - name: Update requirements
+      run: |
+        pip-compile --upgrade requirements.in || echo "No requirements.in found, using requirements.txt as is"
+    
+    - name: Test updated dependencies
+      run: |
+        pip install -r requirements.txt
+        make test
+      env:
+        QT_QPA_PLATFORM: offscreen
+        PYTEST_DISABLE_PLUGIN_AUTOLOAD: 1
+    
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        commit-message: "chore: update Python dependencies"
+        title: "Update Python Dependencies"
+        body: |
+          This PR updates Python dependencies to their latest compatible versions.
+          
+          - Automated dependency update
+          - Tests passing with new versions
+          
+          Please review the changes before merging.
+        branch: update-python-dependencies
+        delete-branch: true
+
+  update-node-deps:
+    name: Update Node.js Dependencies  
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Update npm dependencies
+      run: |
+        npm update
+        npm audit fix --audit-level moderate || true
+    
+    - name: Test updated dependencies
+      run: |
+        npm ci
+        npm run build
+        test -f docs/main.js
+    
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        commit-message: "chore: update Node.js dependencies"
+        title: "Update Node.js Dependencies"
+        body: |
+          This PR updates Node.js dependencies to their latest compatible versions.
+          
+          - Automated dependency update
+          - Build passing with new versions
+          - Security vulnerabilities addressed
+          
+          Please review the changes before merging.
+        branch: update-node-dependencies
+        delete-branch: true
+
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install safety
+      run: pip install safety
+    
+    - name: Python security scan
+      run: |
+        pip install -r requirements.txt
+        safety check --json || true
+    
+    - name: Node.js security scan
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: npm audit
+      run: |
+        npm ci
+        npm audit --audit-level high || true
