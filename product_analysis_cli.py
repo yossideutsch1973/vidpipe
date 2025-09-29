@@ -60,6 +60,24 @@ Examples:
     )
     
     parser.add_argument(
+        '--github',
+        action='store_true',
+        help='Enable GitHub integration features'
+    )
+    
+    parser.add_argument(
+        '--github-issue',
+        action='store_true',
+        help='Create GitHub issue with analysis results'
+    )
+    
+    parser.add_argument(
+        '--github-pr',
+        action='store_true',
+        help='Create GitHub PR with analysis results'
+    )
+    
+    parser.add_argument(
         '-v', '--verbose',
         action='store_true',
         help='Enable verbose output'
@@ -79,7 +97,11 @@ Examples:
         
     try:
         # Initialize the analysis agent
-        agent = ProductAnalysisAgent(str(project_path), args.type)
+        agent = ProductAnalysisAgent(
+            str(project_path), 
+            args.type,
+            enable_github=args.github or args.github_issue or args.github_pr
+        )
         
         # Run analysis and generate report
         print(f"🎯 Analyzing repository: {project_path}")
@@ -88,7 +110,15 @@ Examples:
         else:
             print("🔍 Auto-detecting project type...")
             
-        results, report_path = agent.run_full_analysis(args.output)
+        if args.github or args.github_issue or args.github_pr:
+            print("🐙 GitHub integration enabled")
+            results, report_path = agent.run_full_analysis_with_github(
+                args.output,
+                create_issue=args.github_issue,
+                create_pr=args.github_pr
+            )
+        else:
+            results, report_path = agent.run_full_analysis(args.output)
         
         print(f"✅ Analysis complete!")
         print(f"📄 Report generated: {report_path}")

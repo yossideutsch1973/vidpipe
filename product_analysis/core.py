@@ -14,6 +14,7 @@ from .collectors import RepositoryCollector, ProjectMetadataCollector
 from .analyzers import FeatureAnalyzer, MarketBenchmarkAnalyzer, CompetitiveAnalyzer
 from .generators import MarkdownReportGenerator, AnalysisReportBuilder
 from .templates import get_template_for_project_type, AnalysisTemplate
+from .github_integration import GitHubAnalysisIntegration
 
 
 class ProductAnalysisAgent:
@@ -24,9 +25,11 @@ class ProductAnalysisAgent:
     1. Collects repository and project metadata
     2. Runs various analyzers to assess market position
     3. Generates comprehensive reports
+    4. Integrates with GitHub for enhanced capabilities
     """
     
-    def __init__(self, project_path: str, project_type: Optional[str] = None):
+    def __init__(self, project_path: str, project_type: Optional[str] = None, 
+                 enable_github: bool = True, github_token: Optional[str] = None):
         """
         Initialize the analysis agent
         
@@ -34,13 +37,27 @@ class ProductAnalysisAgent:
             project_path: Path to the project repository
             project_type: Type of project (e.g., 'video-processing', 'web-framework', 'ml-library')
                          If None, will attempt to auto-detect
+            enable_github: Whether to enable GitHub integration features
+            github_token: GitHub token for API access (defaults to GITHUB_TOKEN env var)
         """
         self.project_path = Path(project_path)
         self.project_type = project_type
+        self.enable_github = enable_github
         
         # Initialize components
         self.repo_collector = RepositoryCollector(project_path)
         self.metadata_collector = ProjectMetadataCollector(project_path)
+        
+        # GitHub integration
+        self.github_integration = None
+        if enable_github:
+            try:
+                self.github_integration = GitHubAnalysisIntegration(
+                    token=github_token,
+                    repo_name=None  # Auto-detect
+                )
+            except Exception as e:
+                print(f"Warning: GitHub integration disabled: {e}")
         
         # Analysis components will be initialized after template selection
         self.template: Optional[AnalysisTemplate] = None
@@ -103,6 +120,13 @@ class ProductAnalysisAgent:
             'template_used': self.template.name
         }
         
+        # Step 6: Enhance with GitHub data if available
+        if self.github_integration:
+            print("🐙 Enhancing with GitHub data...")
+            self.analysis_results = self.github_integration.enhance_analysis_with_github_data(
+                self.analysis_results
+            )
+        
         print("✅ Analysis complete!")
         return self.analysis_results
         
@@ -145,6 +169,73 @@ class ProductAnalysisAgent:
         """
         results = self.analyze()
         report_path = self.generate_report(output_path)
+        return results, report_path
+    
+    def create_github_issue(self, title: str = None) -> Optional[int]:
+        """
+        Create a GitHub issue with analysis results
+        
+        Args:
+            title: Custom issue title
+            
+        Returns:
+            Issue number if created successfully, None otherwise
+        """
+        if not self.analysis_results:
+            raise ValueError("No analysis results available. Run analyze() first.")
+            
+        if not self.github_integration:
+            print("Warning: GitHub integration not available")
+            return None
+            
+        return self.github_integration.create_analysis_issue(self.analysis_results, title)
+        
+    def create_github_pr(self, report_file: str, title: str = None) -> Optional[int]:
+        """
+        Create a GitHub pull request with analysis results
+        
+        Args:
+            report_file: Path to the generated report file
+            title: Custom PR title
+            
+        Returns:
+            PR number if created successfully, None otherwise
+        """
+        if not self.analysis_results:
+            raise ValueError("No analysis results available. Run analyze() first.")
+            
+        if not self.github_integration:
+            print("Warning: GitHub integration not available")
+            return None
+            
+        return self.github_integration.create_analysis_pr(self.analysis_results, report_file, title)
+        
+    def run_full_analysis_with_github(self, output_path: Optional[str] = None, 
+                                     create_issue: bool = False,
+                                     create_pr: bool = False) -> tuple[Dict[str, Any], str]:
+        """
+        Run complete analysis with GitHub integration options
+        
+        Args:
+            output_path: Path to save the report
+            create_issue: Whether to create a GitHub issue with results
+            create_pr: Whether to create a GitHub PR with results
+            
+        Returns:
+            Tuple of (analysis_results, report_path)
+        """
+        results, report_path = self.run_full_analysis(output_path)
+        
+        if create_issue:
+            issue_num = self.create_github_issue()
+            if issue_num:
+                print(f"📝 Created GitHub issue #{issue_num}")
+                
+        if create_pr:
+            pr_num = self.create_github_pr(report_path)
+            if pr_num:
+                print(f"🔄 Created GitHub PR #{pr_num}")
+        
         return results, report_path
         
     def _detect_project_type(self, repo_data: Dict[str, Any], metadata: Dict[str, Any]) -> str:

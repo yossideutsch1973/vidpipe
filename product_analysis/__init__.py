@@ -11,6 +11,7 @@ from .collectors import RepositoryCollector, ProjectMetadataCollector
 from .analyzers import FeatureAnalyzer, MarketBenchmarkAnalyzer, CompetitiveAnalyzer
 from .generators import MarkdownReportGenerator, AnalysisReportBuilder
 from .templates import get_template_for_project_type
+from .github_integration import GitHubAnalysisIntegration
 
 __version__ = "1.0.0"
 __all__ = [
@@ -22,5 +23,6 @@ __all__ = [
     "CompetitiveAnalyzer",
     "MarkdownReportGenerator",
     "AnalysisReportBuilder",
-    "get_template_for_project_type"
+    "get_template_for_project_type",
+    "GitHubAnalysisIntegration"
 ]
