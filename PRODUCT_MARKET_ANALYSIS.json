@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-29T09:20:34.178474",
+  "timestamp": "2025-09-29T10:06:56.213083",
   "project_path": "/home/runner/work/vidpipe/vidpipe",
   "project_type": "video-processing",
   "repository_data": {
@@ -12,10 +12,9 @@
           "docs",
           "tests",
           "gui",
-          "src",
-          "vidpipe.egg-info"
+          "src"
         ],
-        "file_count": 17,
+        "file_count": 22,
         "key_files": [
           "requirements.txt",
           "CONTRIBUTING.md",
@@ -27,7 +26,7 @@
       },
       "product_analysis": {
         "subdirectories": [],
-        "file_count": 6,
+        "file_count": 7,
         "key_files": []
       },
       "examples": {
@@ -39,7 +38,7 @@
       },
       "vidpipe": {
         "subdirectories": [],
-        "file_count": 12,
+        "file_count": 11,
         "key_files": []
       },
       "docs": {
@@ -61,18 +60,13 @@
         "subdirectories": [],
         "file_count": 2,
         "key_files": []
-      },
-      "vidpipe.egg-info": {
-        "subdirectories": [],
-        "file_count": 6,
-        "key_files": []
       }
     },
     "file_counts": {
-      ".txt": 6,
-      ".md": 11,
+      ".txt": 1,
+      ".md": 15,
       ".py": 35,
-      ".json": 3,
+      ".json": 4,
       ".toml": 1,
       ".vp": 18,
       ".html": 1,
@@ -80,13 +74,15 @@
       ".ts": 2
     },
     "key_files": [
-      ".pytest_cache/README.md",
       "CONTRIBUTING.md",
+      "GITHUB_INTEGRATION_GUIDE.md",
+      "IMPLEMENTATION_SUMMARY.md",
       "Makefile",
       "PRODUCT_ANALYSIS_AGENT.md",
       "PRODUCT_MARKET_ANALYSIS.md",
       "README.md",
       "SECURITY.md",
+      "USAGE_GUIDE.md",
       "docs/architecture_overview.md",
       "docs/computer_vision_pipeline_texts.md",
       "docs/language_reference.md",
@@ -96,7 +92,8 @@
       "package-lock.json",
       "package.json",
       "pyproject.toml",
-      "requirements.txt"
+      "requirements.txt",
+      "test-analysis.md"
     ],
     "readme_analysis": {
       "found": true,
@@ -120,23 +117,25 @@
       "badge_count": 0
     },
     "documentation_files": [
-      ".pytest_cache/README.md",
       "CONTRIBUTING.md",
+      "GITHUB_INTEGRATION_GUIDE.md",
+      "IMPLEMENTATION_SUMMARY.md",
       "PRODUCT_ANALYSIS_AGENT.md",
       "PRODUCT_MARKET_ANALYSIS.md",
       "README.md",
       "SECURITY.md",
+      "USAGE_GUIDE.md",
       "docs/",
       "docs/architecture_overview.md",
       "docs/computer_vision_pipeline_texts.md",
       "docs/language_reference.md",
       "docs/project_status.md",
       "docs/web_interface.md",
-      "examples/README.md"
+      "examples/README.md",
+      "test-analysis.md"
     ],
     "test_structure": {
       "test_directories": [
-        ".pytest_cache",
         "tests"
       ],
       "test_files": [
@@ -148,16 +147,9 @@
         "tests/test_function_registry_comprehensive.py",
         "tests/test_language_components.py",
         "tests/test_runtime_comprehensive.py",
-        "tests/test_function_registry.py",
-        "tests/__pycache__/test_parser_comprehensive.cpython-312-pytest-8.4.2.pyc",
-        "tests/__pycache__/test_product_analysis.cpython-312-pytest-8.4.2.pyc",
-        "tests/__pycache__/test_lexer_comprehensive.cpython-312-pytest-8.4.2.pyc",
-        "tests/__pycache__/test_language_components.cpython-312-pytest-8.4.2.pyc",
-        "tests/__pycache__/test_function_registry.cpython-312-pytest-8.4.2.pyc",
-        "tests/__pycache__/test_runtime_comprehensive.cpython-312-pytest-8.4.2.pyc",
-        "tests/__pycache__/test_function_registry_comprehensive.cpython-312-pytest-8.4.2.pyc"
+        "tests/test_function_registry.py"
       ],
-      "test_file_count": 16,
+      "test_file_count": 9,
       "has_testing": true
     },
     "build_configuration": {
@@ -269,7 +261,7 @@
       }
     },
     "languages": {
-      "Markdown": 12,
+      "Markdown": 15,
       "Python": 35,
       "HTML": 1,
       "JavaScript": 1,
@@ -334,7 +326,7 @@
       ],
       "Enterprise Features": [
         "FeatureAssessment(name='Configuration Management', present=True, market_standard=True, notes='Present \u2013 detected in project structure', opportunity_level='satisfied')",
-        "FeatureAssessment(name='Version Control Integration', present=False, market_standard=True, notes='Missing \u2013 considered market standard', opportunity_level='critical')",
+        "FeatureAssessment(name='Version Control Integration', present=True, market_standard=True, notes='Present \u2013 detected in project structure', opportunity_level='satisfied')",
         "FeatureAssessment(name='Monitoring/Logging', present=False, market_standard=False, notes='Missing \u2013 opportunity for differentiation', opportunity_level='medium')",
         "FeatureAssessment(name='REST API', present=False, market_standard=False, notes='Missing \u2013 opportunity for differentiation', opportunity_level='medium')",
         "FeatureAssessment(name='Docker/Container Support', present=False, market_standard=False, notes='Missing \u2013 opportunity for differentiation', opportunity_level='medium')"
@@ -348,18 +340,18 @@
     },
     "summary": {
       "total_features": 38,
-      "present_features": 6,
-      "coverage_score": 0.15789473684210525,
+      "present_features": 7,
+      "coverage_score": 0.18421052631578946,
       "critical_gaps": [
         "Real-time Processing (Core Language & Runtime)",
         "Multi-threading Support (Core Language & Runtime)",
         "Command Line Interface (Development Interfaces)",
-        "Version Control Integration (Enterprise Features)",
         "Cross-platform Support (Distribution & Installation)",
         "Documentation/Tutorials (Distribution & Installation)"
       ],
       "key_strengths": [
         "Configuration Management (Enterprise Features)",
+        "Version Control Integration (Enterprise Features)",
         "Package Manager Distribution (Distribution & Installation)"
       ]
     }
